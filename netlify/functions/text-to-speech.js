@@ -1,8 +1,6 @@
 // Esta función se ejecuta en los servidores de Netlify, no en el navegador del usuario
 // Por eso puede acceder de manera segura a la API key sin exponerla
 
-const fetch = require('node-fetch');
-
 exports.handler = async (event, context) => {
     // Solo permitir peticiones POST
     if (event.httpMethod !== 'POST') {
