@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lector de Textos - TTS</title>
+    <title>Lector de Textos - TTS Multi-Parte</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -420,6 +420,149 @@
             background: #218838;
         }
         
+        /* Estilos multi-parte */
+        .multi-part-container {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .multi-part-container.show {
+            display: block;
+        }
+        
+        .split-info {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .split-info h4 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        
+        .part-card {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .part-card.completed {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .part-card.generating {
+            border-color: #ffc107;
+            background: #fff3cd;
+        }
+        
+        .part-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .part-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #333;
+        }
+        
+        .part-status {
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+        
+        .part-status.pending {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .part-status.generating {
+            background: #ffc107;
+            color: #856404;
+        }
+        
+        .part-status.completed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .part-status.error {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .part-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .part-preview {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            color: #555;
+            margin: 10px 0;
+            font-style: italic;
+            border-left: 3px solid #2196F3;
+        }
+        
+        .part-audio {
+            margin: 15px 0;
+        }
+        
+        .part-audio audio {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .part-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .part-actions button {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.9em;
+        }
+        
+        .btn-download-all {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-download-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-download-all:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -433,10 +576,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎧 Lector de Textos</h1>
-        <p class="subtitle">Convierte tus textos a audio de alta calidad usando inteligencia artificial</p>
+        <h1>🎧 Lector de Textos Multi-Parte</h1>
+        <p class="subtitle">Convierte tus textos largos a múltiples archivos MP3 de alta calidad</p>
         
-        <!-- Información de uso -->
+        <!-- Información de uso gratuito -->
         <div class="usage-info">
             <h3>📊 Uso del mes actual (Modo Gratuito)</h3>
             <div class="usage-bar">
@@ -444,7 +587,7 @@
             </div>
             <div class="usage-text" id="usageText">Cargando...</div>
             <div style="margin-top: 10px; font-size: 0.85em; color: #888;">
-                💡 <strong>Nota:</strong> Tu cuota se renueva automáticamente el primer día de cada mes. La aplicación <strong>bloqueará automáticamente</strong> cualquier generación que exceda tu límite mensual de 100,000 caracteres.
+                💡 <strong>Nota:</strong> Tu cuota se renueva automáticamente el primer día de cada mes. Textos mayores a 30,000 caracteres se dividirán automáticamente en múltiples MP3.
             </div>
         </div>
         
@@ -469,20 +612,20 @@
                 </div>
                 <div id="budgetText" style="margin-top: 5px;">Gastado este mes: $0.00 de $16.00</div>
                 <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.9;">
-                    💰 Costo: $16 por millón de caracteres ($0.000016 por carácter)<br>
+                    💰 Costo: $16 por millón de caracteres<br>
                     📝 Un texto de 60,000 caracteres ≈ $0.96 USD<br>
                     🛡️ <strong>La aplicación bloqueará automáticamente cualquier generación que exceda este límite.</strong>
                 </div>
             </div>
         </div>
         
-        <!-- Preview de costo antes de generar -->
+        <!-- Preview de costo -->
         <div class="cost-preview" id="costPreview"></div>
         
         <!-- Área de texto -->
         <div class="input-section">
             <label for="textInput">Pega tu texto aquí:</label>
-            <textarea id="textInput" placeholder="Escribe o pega tu texto aquí... (máximo 100,000 caracteres por conversión)"></textarea>
+            <textarea id="textInput" placeholder="Escribe o pega tu texto aquí..."></textarea>
             <div class="char-count" id="charCount">0 caracteres</div>
             
             <div class="file-input-wrapper">
@@ -495,8 +638,7 @@
         <div class="voice-selector">
             <label for="voiceSelect">Selecciona una voz:</label>
             <select id="voiceSelect">
-                <!-- Voces Neural2 (Gratuitas) - SIEMPRE VISIBLES -->
-                <optgroup label="🆓 GRATUITAS - Neural2 (dentro de tu cuota mensual)" id="freeVoices">
+                <optgroup label="🆓 GRATUITAS - Neural2 (dentro de tu cuota mensual)">
                     <option value="es-ES-Neural2-A">🆓 España - Femenina A</option>
                     <option value="es-ES-Neural2-B">🆓 España - Masculina B</option>
                     <option value="es-ES-Neural2-C">🆓 España - Femenina C</option>
@@ -508,8 +650,7 @@
                     <option value="es-US-Neural2-C">🆓 US Latino - Masculina C</option>
                 </optgroup>
                 
-                <!-- Voces Studio/Journey (Premium) - SIEMPRE VISIBLES -->
-                <optgroup label="💰 PREMIUM - Studio/Journey ($16/millón caracteres)" id="premiumVoices">
+                <optgroup label="💰 PREMIUM - Studio/Journey ($16/millón caracteres)">
                     <option value="es-ES-Studio-C">💰 España - Studio C - Femenina (PAGO)</option>
                     <option value="es-ES-Studio-F">💰 España - Studio F - Masculina (PAGO)</option>
                     <option value="es-ES-Journey-D">💰 España - Journey D - Femenina (PAGO)</option>
@@ -520,7 +661,6 @@
                 </optgroup>
             </select>
             
-            <!-- Indicador de tipo de voz seleccionada -->
             <div class="voice-indicator" id="voiceIndicator"></div>
         </div>
         
@@ -536,23 +676,38 @@
             <div class="progress-fill" id="progressFill"></div>
         </div>
         
-        <!-- Reproductor de audio -->
+        <!-- Reproductor simple (para textos cortos) -->
         <div id="audioPlayer" class="audio-player">
             <audio id="audio" controls></audio>
             <button id="downloadBtn" class="download-btn">⬇️ Descargar MP3</button>
         </div>
+        
+        <!-- Contenedor multi-parte (para textos largos) -->
+        <div id="multiPartContainer" class="multi-part-container">
+            <div class="split-info" id="splitInfo"></div>
+            <div id="partsContainer"></div>
+            <button id="downloadAllBtn" class="btn-download-all" style="display: none;">
+                📦 Descargar TODAS las partes
+            </button>
+        </div>
     </div>
 
     <script>
-        // Configuración
-        const MONTHLY_LIMIT = 100000; // Límite gratuito de caracteres mensuales con voces Neural2
-        const MAX_CHARS_PER_REQUEST = 1500; // Límite muy conservador para evitar timeouts
-        const PREMIUM_COST_PER_MILLION = 16; // USD por millón de caracteres (Studio/Journey)
-        const PREMIUM_COST_PER_CHAR = PREMIUM_COST_PER_MILLION / 1000000; // $0.000016 por carácter
-        const MONTHLY_BUDGET = 16; // Presupuesto mensual FIJO en USD (no modificable)
-        const MAX_RETRIES = 2; // Reducir a 2 reintentos para no perder tanto tiempo
+        // ============================================
+        // CONFIGURACIÓN
+        // ============================================
+        const MONTHLY_LIMIT = 100000; // Límite gratuito mensual
+        const MAX_CHARS_PER_REQUEST = 1500; // Fragmentos internos pequeños
+        const MAX_CHARS_PER_PART = 20000; // Tamaño de cada PARTE (MP3 individual)
+        const AUTO_SPLIT_THRESHOLD = 30000; // Si excede esto, divide automáticamente
+        const PREMIUM_COST_PER_MILLION = 16;
+        const PREMIUM_COST_PER_CHAR = PREMIUM_COST_PER_MILLION / 1000000;
+        const MONTHLY_BUDGET = 16; // Presupuesto fijo
+        const MAX_RETRIES = 2;
         
-        // Elementos del DOM
+        // ============================================
+        // ELEMENTOS DEL DOM
+        // ============================================
         const textInput = document.getElementById('textInput');
         const fileInput = document.getElementById('fileInput');
         const charCount = document.getElementById('charCount');
@@ -567,29 +722,33 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const usageBar = document.getElementById('usageBar');
         const usageText = document.getElementById('usageText');
-        
-        // Elementos del modo premium
         const premiumToggle = document.getElementById('premiumToggle');
         const budgetBar = document.getElementById('budgetBar');
         const budgetText = document.getElementById('budgetText');
         const costPreview = document.getElementById('costPreview');
-        const freeVoices = document.getElementById('freeVoices');
-        const premiumVoices = document.getElementById('premiumVoices');
-        const container = document.querySelector('.container');
         const voiceIndicator = document.getElementById('voiceIndicator');
+        const container = document.querySelector('.container');
+        
+        // Elementos multi-parte
+        const multiPartContainer = document.getElementById('multiPartContainer');
+        const splitInfo = document.getElementById('splitInfo');
+        const partsContainer = document.getElementById('partsContainer');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
         
         let currentAudioBlob = null;
         let isPremiumMode = false;
+        let generatedParts = [];
         
-        // Inicializar la aplicación
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
         function init() {
             updateUsageDisplay();
             updateCharCount();
             updateBudgetDisplay();
             loadPremiumMode();
-            updateVoiceIndicator(); // Actualizar indicador al cargar
+            updateVoiceIndicator();
             
-            // Event listeners
             textInput.addEventListener('input', () => {
                 updateCharCount();
                 updateCostPreview();
@@ -603,9 +762,63 @@
                 updateVoiceIndicator();
                 updateCostPreview();
             });
+            downloadAllBtn.addEventListener('click', downloadAllParts);
         }
         
-        // Obtener gasto del mes actual (en USD)
+        // ============================================
+        // GESTIÓN DE USO Y PRESUPUESTO
+        // ============================================
+        function getMonthlyUsage() {
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
+            const stored = localStorage.getItem('tts-usage');
+            
+            if (stored) {
+                const data = JSON.parse(stored);
+                if (data.month === currentMonth) return data.chars;
+            }
+            return 0;
+        }
+        
+        function saveMonthlyUsage(charsUsed) {
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
+            const currentUsage = getMonthlyUsage();
+            
+            localStorage.setItem('tts-usage', JSON.stringify({
+                month: currentMonth,
+                chars: currentUsage + charsUsed
+            }));
+            updateUsageDisplay();
+        }
+        
+        function updateUsageDisplay() {
+            const used = getMonthlyUsage();
+            const percentage = (used / MONTHLY_LIMIT) * 100;
+            const remaining = Math.max(0, MONTHLY_LIMIT - used);
+            
+            usageBar.style.width = `${Math.min(percentage, 100)}%`;
+            
+            let message = `Has usado <strong>${used.toLocaleString()}</strong> de <strong>${MONTHLY_LIMIT.toLocaleString()}</strong> caracteres este mes.<br>`;
+            
+            if (percentage >= 100) {
+                message += `<strong style="color: #dc3545;">⛔ LÍMITE ALCANZADO</strong>`;
+                usageBar.style.background = 'linear-gradient(90deg, #dc3545, #c82333)';
+                generateBtn.disabled = true;
+            } else if (percentage > 90) {
+                message += `<strong style="color: #dc3545;">⚠️ ADVERTENCIA:</strong> Quedan ${remaining.toLocaleString()} caracteres.`;
+                usageBar.style.background = 'linear-gradient(90deg, #dc3545, #c82333)';
+            } else if (percentage > 70) {
+                message += `<strong style="color: #ffc107;">⚠️ PRECAUCIÓN:</strong> Quedan ${remaining.toLocaleString()} caracteres.`;
+                usageBar.style.background = 'linear-gradient(90deg, #ffc107, #e0a800)';
+            } else {
+                message += `Te quedan ${remaining.toLocaleString()} caracteres. 🟢`;
+                usageBar.style.background = 'linear-gradient(90deg, #667eea, #764ba2)';
+            }
+            
+            usageText.innerHTML = message;
+        }
+        
         function getMonthlySpending() {
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
@@ -613,35 +826,49 @@
             
             if (stored) {
                 const data = JSON.parse(stored);
-                if (data.month === currentMonth) {
-                    return data.spent;
-                }
+                if (data.month === currentMonth) return data.spent;
             }
-            
             return 0;
         }
         
-        // Guardar gasto del mes
         function saveMonthlySpending(cost) {
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
             const currentSpending = getMonthlySpending();
             
-            const data = {
+            localStorage.setItem('tts-premium-spending', JSON.stringify({
                 month: currentMonth,
                 spent: currentSpending + cost
-            };
-            
-            localStorage.setItem('tts-premium-spending', JSON.stringify(data));
+            }));
             updateBudgetDisplay();
         }
         
-        // Calcular costo de un texto
+        function updateBudgetDisplay() {
+            const spent = getMonthlySpending();
+            const budget = MONTHLY_BUDGET;
+            const percentage = (spent / budget) * 100;
+            
+            budgetBar.style.width = `${Math.min(percentage, 100)}%`;
+            budgetText.innerHTML = `Gastado: <strong>$${spent.toFixed(2)}</strong> de <strong>$${budget.toFixed(2)}</strong>`;
+            
+            if (percentage >= 100) {
+                budgetText.innerHTML += '<br><strong style="color: #fff;">⛔ PRESUPUESTO AGOTADO</strong>';
+                budgetBar.style.background = '#dc3545';
+            } else if (percentage > 90) {
+                budgetText.innerHTML += '<br><strong style="color: #fff;">⚠️ Quedan $' + (budget - spent).toFixed(2) + '</strong>';
+                budgetBar.style.background = '#ffc107';
+            } else {
+                budgetBar.style.background = 'white';
+            }
+        }
+        
         function calculateCost(charCount) {
             return charCount * PREMIUM_COST_PER_CHAR;
         }
         
-        // Cargar estado del modo premium
+        // ============================================
+        // MODO PREMIUM
+        // ============================================
         function loadPremiumMode() {
             const saved = localStorage.getItem('tts-premium-mode');
             if (saved === 'true') {
@@ -650,65 +877,78 @@
             }
         }
         
-        // Verificar si la voz seleccionada es premium
+        function savePremiumMode() {
+            localStorage.setItem('tts-premium-mode', premiumToggle.checked);
+        }
+        
+        function togglePremiumMode() {
+            if (premiumToggle.checked) {
+                const confirmation = confirm(
+                    '⚠️ ACTIVAR MODO PREMIUM\n\n' +
+                    'Voces Studio/Journey cuestan $16 por millón de caracteres.\n' +
+                    'Presupuesto mensual FIJO: $16.00 USD\n' +
+                    'La app bloqueará automáticamente si excedes este límite.\n\n' +
+                    '¿Activar?'
+                );
+                
+                if (confirmation) {
+                    activatePremiumMode();
+                } else {
+                    premiumToggle.checked = false;
+                }
+            } else {
+                deactivatePremiumMode();
+            }
+            
+            savePremiumMode();
+            updateCostPreview();
+        }
+        
+        function activatePremiumMode() {
+            isPremiumMode = true;
+            container.classList.add('premium-active');
+            updateVoiceIndicator();
+            updateCostPreview();
+        }
+        
+        function deactivatePremiumMode() {
+            isPremiumMode = false;
+            container.classList.remove('premium-active');
+            
+            if (isVoicePremium(voiceSelect.value)) {
+                voiceSelect.value = 'es-ES-Neural2-A';
+            }
+            
+            updateVoiceIndicator();
+            costPreview.classList.remove('show');
+        }
+        
         function isVoicePremium(voiceName) {
             return voiceName.includes('Studio') || voiceName.includes('Journey');
         }
         
-        // Actualizar indicador de voz
         function updateVoiceIndicator() {
             const selectedVoice = voiceSelect.value;
             const isPremiumVoice = isVoicePremium(selectedVoice);
             
             if (isPremiumVoice) {
-                // Voz premium seleccionada
                 if (isPremiumMode) {
-                    // Modo premium activado - puede usar la voz
                     voiceIndicator.className = 'voice-indicator show premium';
-                    voiceIndicator.innerHTML = '💰 <strong>VOZ DE PAGO SELECCIONADA</strong> - Se cobrará $16 por millón de caracteres';
+                    voiceIndicator.innerHTML = '💰 <strong>VOZ DE PAGO SELECCIONADA</strong> - $16 por millón de caracteres';
                 } else {
-                    // Modo premium NO activado - no puede usar la voz
                     voiceIndicator.className = 'voice-indicator show premium-disabled';
-                    voiceIndicator.innerHTML = '⛔ <strong>ADVERTENCIA:</strong> Esta es una voz de pago pero el Modo Premium está desactivado. Activa el Modo Premium arriba para poder usarla.';
+                    voiceIndicator.innerHTML = '⛔ <strong>ADVERTENCIA:</strong> Voz premium pero modo desactivado. Activa el Modo Premium arriba.';
                 }
             } else {
-                // Voz gratuita seleccionada
                 voiceIndicator.className = 'voice-indicator show free';
-                voiceIndicator.innerHTML = '🆓 <strong>VOZ GRATUITA SELECCIONADA</strong> - Dentro de tu cuota mensual de 100,000 caracteres';
+                voiceIndicator.innerHTML = '🆓 <strong>VOZ GRATUITA</strong> - Dentro de tu cuota de 100,000 caracteres/mes';
             }
         }
         
-        // Guardar estado del modo premium
-        function savePremiumMode() {
-            localStorage.setItem('tts-premium-mode', premiumToggle.checked);
-        }
-        
-        // Actualizar display de presupuesto
-        function updateBudgetDisplay() {
-            const spent = getMonthlySpending();
-            const budget = MONTHLY_BUDGET; // Usar constante fija
-            const percentage = (spent / budget) * 100;
-            
-            budgetBar.style.width = `${Math.min(percentage, 100)}%`;
-            budgetText.innerHTML = `Gastado este mes: <strong>$${spent.toFixed(2)}</strong> de <strong>$${budget.toFixed(2)}</strong> USD`;
-            
-            if (percentage >= 100) {
-                budgetText.innerHTML += '<br><strong style="color: #fff;">⛔ PRESUPUESTO AGOTADO - No se puede generar más audio este mes</strong>';
-                budgetBar.style.background = '#dc3545';
-            } else if (percentage > 90) {
-                budgetText.innerHTML += '<br><strong style="color: #fff;">⚠️ Quedan $' + (budget - spent).toFixed(2) + ' USD</strong>';
-                budgetBar.style.background = '#ffc107';
-            } else {
-                budgetBar.style.background = 'white';
-            }
-        }
-        
-        // Actualizar preview de costo
         function updateCostPreview() {
             const selectedVoice = voiceSelect.value;
             const isPremiumVoice = isVoicePremium(selectedVoice);
             
-            // Solo mostrar preview de costo si es voz premium
             if (!isPremiumVoice) {
                 costPreview.classList.remove('show');
                 return;
@@ -720,15 +960,10 @@
                 return;
             }
             
-            // Si es voz premium pero el modo premium no está activado
             if (!isPremiumMode) {
-                costPreview.innerHTML = `
-                    ⛔ <strong>ADVERTENCIA:</strong> Has seleccionado una voz premium pero el Modo Premium está desactivado. 
-                    Activa el Modo Premium arriba para poder usar esta voz.
-                `;
+                costPreview.innerHTML = '⛔ <strong>ADVERTENCIA:</strong> Voz premium seleccionada pero modo desactivado.';
                 costPreview.style.background = '#f8d7da';
                 costPreview.style.borderColor = '#dc3545';
-                costPreview.style.color = '#721c24';
                 costPreview.classList.add('show');
                 return;
             }
@@ -736,96 +971,30 @@
             const charCount = text.length;
             const cost = calculateCost(charCount);
             const spent = getMonthlySpending();
-            const budget = MONTHLY_BUDGET; // Usar constante fija
-            const remaining = budget - spent;
+            const remaining = MONTHLY_BUDGET - spent;
             
             if (cost > remaining) {
-                costPreview.innerHTML = `
-                    ❌ <strong>NO SE PUEDE GENERAR:</strong> Este audio costaría <strong>$${cost.toFixed(4)} USD</strong> 
-                    pero solo tienes <strong>$${remaining.toFixed(2)} USD</strong> disponibles en tu presupuesto mensual de <strong>$${budget.toFixed(2)} USD</strong>.
-                `;
+                costPreview.innerHTML = `❌ <strong>NO ALCANZA:</strong> Costaría $${cost.toFixed(4)} pero solo tienes $${remaining.toFixed(2)}.`;
                 costPreview.style.background = '#f8d7da';
                 costPreview.style.borderColor = '#dc3545';
-                costPreview.style.color = '#721c24';
             } else {
-                costPreview.innerHTML = `
-                    💰 Este audio costará aproximadamente <strong>$${cost.toFixed(4)} USD</strong> 
-                    (${charCount.toLocaleString()} caracteres × $0.000016)<br>
-                    Después del cargo te quedarán <strong>$${(remaining - cost).toFixed(2)} USD</strong> de tu presupuesto mensual de <strong>$${budget.toFixed(2)} USD</strong>.
-                `;
+                costPreview.innerHTML = `💰 Costo: <strong>$${cost.toFixed(4)} USD</strong> (${charCount.toLocaleString()} × $0.000016)<br>Quedarán: $${(remaining - cost).toFixed(2)}`;
                 costPreview.style.background = '#fff3cd';
                 costPreview.style.borderColor = '#ffc107';
-                costPreview.style.color = '#856404';
             }
             
             costPreview.classList.add('show');
         }
         
-        // Actualizar contador de caracteres
+        // ============================================
+        // INTERFAZ
+        // ============================================
         function updateCharCount() {
             const count = textInput.value.length;
             charCount.textContent = `${count.toLocaleString()} caracteres`;
-            
-            // Advertir si excede el límite
-            if (count > 100000) {
-                charCount.style.color = '#dc3545';
-            } else {
-                charCount.style.color = '#666';
-            }
+            charCount.style.color = count > 100000 ? '#dc3545' : '#666';
         }
         
-        // Toggle modo premium
-        function togglePremiumMode() {
-            if (premiumToggle.checked) {
-                // Activando modo premium
-                const confirmation = confirm(
-                    '⚠️ ACTIVAR MODO PREMIUM\n\n' +
-                    '¿Estás seguro de que quieres activar el Modo Premium?\n\n' +
-                    '• Las voces Studio/Journey cuestan $16 USD por millón de caracteres\n' +
-                    '• Un texto de 60,000 caracteres cuesta aproximadamente $0.96 USD\n' +
-                    '• Se te pedirá confirmación antes de cada generación\n' +
-                    '• Tu presupuesto mensual FIJO es $' + MONTHLY_BUDGET.toFixed(2) + ' USD (no modificable)\n' +
-                    '• La aplicación bloqueará automáticamente cualquier generación que exceda este límite\n\n' +
-                    'Este costo se cobrará a tu tarjeta registrada en Google Cloud.'
-                );
-                
-                if (confirmation) {
-                    activatePremiumMode();
-                } else {
-                    premiumToggle.checked = false;
-                }
-            } else {
-                // Desactivando modo premium
-                deactivatePremiumMode();
-            }
-            
-            savePremiumMode();
-            updateCostPreview();
-        }
-        
-        // Activar modo premium
-        function activatePremiumMode() {
-            isPremiumMode = true;
-            container.classList.add('premium-active');
-            updateVoiceIndicator();
-            updateCostPreview();
-        }
-        
-        // Desactivar modo premium
-        function deactivatePremiumMode() {
-            isPremiumMode = false;
-            container.classList.remove('premium-active');
-            
-            // Si tiene una voz premium seleccionada, cambiar a voz gratuita
-            if (isVoicePremium(voiceSelect.value)) {
-                voiceSelect.value = 'es-ES-Neural2-A';
-            }
-            
-            updateVoiceIndicator();
-            costPreview.classList.remove('show');
-        }
-        
-        // Manejar carga de archivo
         function handleFileUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -838,99 +1007,64 @@
             reader.readAsText(file);
         }
         
-        // Obtener uso del mes actual
-        function getMonthlyUsage() {
-            const now = new Date();
-            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
-            const stored = localStorage.getItem('tts-usage');
-            
-            if (stored) {
-                const data = JSON.parse(stored);
-                if (data.month === currentMonth) {
-                    return data.chars;
-                }
-            }
-            
-            // Si es un nuevo mes o no hay datos, resetear
-            return 0;
-        }
-        
-        // Guardar uso del mes
-        function saveMonthlyUsage(charsUsed) {
-            const now = new Date();
-            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
-            const currentUsage = getMonthlyUsage();
-            
-            const data = {
-                month: currentMonth,
-                chars: currentUsage + charsUsed
-            };
-            
-            localStorage.setItem('tts-usage', JSON.stringify(data));
-            updateUsageDisplay();
-        }
-        
-        // Actualizar visualización de uso
-        function updateUsageDisplay() {
-            const used = getMonthlyUsage();
-            const percentage = (used / MONTHLY_LIMIT) * 100;
-            const remaining = Math.max(0, MONTHLY_LIMIT - used);
-            
-            usageBar.style.width = `${Math.min(percentage, 100)}%`;
-            
-            // Construir el mensaje base
-            let message = `Has usado <strong>${used.toLocaleString()}</strong> de <strong>${MONTHLY_LIMIT.toLocaleString()}</strong> caracteres este mes.<br>`;
-            
-            // Agregar mensaje según el nivel de uso
-            if (percentage >= 100) {
-                message += `<strong style="color: #dc3545;">⛔ LÍMITE ALCANZADO</strong> - No puedes generar más audio este mes. Tu cuota se renovará el próximo mes.`;
-                usageText.style.color = '#dc3545';
-                usageBar.style.background = 'linear-gradient(90deg, #dc3545, #c82333)';
-                generateBtn.disabled = true;
-                generateBtn.style.opacity = '0.5';
-                generateBtn.style.cursor = 'not-allowed';
-            } else if (percentage > 90) {
-                message += `<strong style="color: #dc3545;">⚠️ ADVERTENCIA CRÍTICA:</strong> Solo te quedan <strong>${remaining.toLocaleString()}</strong> caracteres disponibles (${(100 - percentage).toFixed(1)}% restante).`;
-                usageText.style.color = '#dc3545';
-                usageBar.style.background = 'linear-gradient(90deg, #dc3545, #c82333)';
-            } else if (percentage > 70) {
-                message += `<strong style="color: #ffc107;">⚠️ PRECAUCIÓN:</strong> Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres disponibles (${(100 - percentage).toFixed(1)}% restante).`;
-                usageText.style.color = '#856404';
-                usageBar.style.background = 'linear-gradient(90deg, #ffc107, #e0a800)';
-            } else {
-                message += `Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres disponibles (${(100 - percentage).toFixed(1)}% restante). 🟢`;
-                usageText.style.color = '#666';
-                usageBar.style.background = 'linear-gradient(90deg, #667eea, #764ba2)';
-            }
-            
-            usageText.innerHTML = message;
-        }
-        
-        // Mostrar estado
         function showStatus(message, type) {
             status.textContent = message;
             status.className = `status show ${type}`;
         }
         
-        // Dividir texto en fragmentos
+        function clearAll() {
+            textInput.value = '';
+            fileInput.value = '';
+            updateCharCount();
+            audioPlayer.classList.remove('show');
+            multiPartContainer.classList.remove('show');
+            status.classList.remove('show');
+            progressBar.classList.remove('show');
+            costPreview.classList.remove('show');
+            
+            if (audio.src) {
+                URL.revokeObjectURL(audio.src);
+                audio.src = '';
+            }
+            
+            currentAudioBlob = null;
+            generatedParts = [];
+        }
+        
+        function downloadAudio() {
+            if (!currentAudioBlob) return;
+            
+            const url = URL.createObjectURL(currentAudioBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `audio-${Date.now()}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // ============================================
+        // FUNCIONES MULTI-PARTE
+        // ============================================
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
         function splitTextIntoChunks(text, maxChars) {
             const chunks = [];
             const paragraphs = text.split(/\n\n+/);
             let currentChunk = '';
             
             for (const paragraph of paragraphs) {
-                // Si un solo párrafo es más largo que el máximo, dividirlo por oraciones
                 if (paragraph.length > maxChars) {
-                    // Si el chunk actual tiene contenido, guardarlo primero
                     if (currentChunk) {
                         chunks.push(currentChunk.trim());
                         currentChunk = '';
                     }
                     
                     const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
-                    
                     for (const sentence of sentences) {
-                        // Si una sola oración es muy larga, dividirla por palabras
                         if (sentence.length > maxChars) {
                             if (currentChunk) {
                                 chunks.push(currentChunk.trim());
@@ -961,19 +1095,104 @@
                 }
             }
             
-            if (currentChunk) {
-                chunks.push(currentChunk.trim());
-            }
-            
+            if (currentChunk) chunks.push(currentChunk.trim());
             return chunks;
         }
         
-        // Función auxiliar para esperar entre reintentos
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+        function splitTextIntoParts(text, maxCharsPerPart) {
+            const parts = [];
+            const paragraphs = text.split(/\n\n+/);
+            let currentPart = '';
+            
+            for (const paragraph of paragraphs) {
+                if ((currentPart + '\n\n' + paragraph).length > maxCharsPerPart && currentPart) {
+                    parts.push(currentPart.trim());
+                    currentPart = paragraph;
+                } else {
+                    currentPart += (currentPart ? '\n\n' : '') + paragraph;
+                }
+            }
+            
+            if (currentPart) parts.push(currentPart.trim());
+            return parts;
         }
         
-        // Función para procesar un fragmento con reintentos
+        function createPartCard(partIndex, totalParts, partText, charCount) {
+            const card = document.createElement('div');
+            card.className = 'part-card';
+            card.id = `part-${partIndex}`;
+            
+            const preview = partText.substring(0, 100) + (partText.length > 100 ? '...' : '');
+            
+            card.innerHTML = `
+                <div class="part-header">
+                    <div class="part-title">🎧 Parte ${partIndex + 1} de ${totalParts}</div>
+                    <div class="part-status pending" id="status-${partIndex}">⏳ Pendiente</div>
+                </div>
+                <div class="part-info">
+                    📝 ${charCount.toLocaleString()} caracteres • ~${Math.ceil(charCount / 150)} palabras
+                </div>
+                <div class="part-preview">"${preview}"</div>
+                <div class="part-audio" id="audio-${partIndex}" style="display: none;"></div>
+            `;
+            
+            return card;
+        }
+        
+        function updatePartStatus(partIndex, status, message) {
+            const statusEl = document.getElementById(`status-${partIndex}`);
+            const card = document.getElementById(`part-${partIndex}`);
+            
+            if (statusEl) {
+                statusEl.className = `part-status ${status}`;
+                statusEl.textContent = message;
+            }
+            
+            if (card) card.className = `part-card ${status}`;
+        }
+        
+        function showPartAudio(partIndex, audioBlob) {
+            const audioContainer = document.getElementById(`audio-${partIndex}`);
+            if (!audioContainer) return;
+            
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            audioContainer.innerHTML = `
+                <audio controls style="width: 100%; margin-bottom: 10px;">
+                    <source src="${audioUrl}" type="audio/mp3">
+                </audio>
+                <div class="part-actions">
+                    <button onclick="downloadPart(${partIndex})" class="btn-secondary">
+                        ⬇️ Descargar Parte ${partIndex + 1}
+                    </button>
+                </div>
+            `;
+            
+            audioContainer.style.display = 'block';
+        }
+        
+        window.downloadPart = function(partIndex) {
+            if (!generatedParts[partIndex] || !generatedParts[partIndex].blob) return;
+            
+            const url = URL.createObjectURL(generatedParts[partIndex].blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `audio-parte-${partIndex + 1}-de-${generatedParts.length}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+        
+        async function downloadAllParts() {
+            for (let i = 0; i < generatedParts.length; i++) {
+                if (generatedParts[i] && generatedParts[i].blob) {
+                    downloadPart(i);
+                    await sleep(500);
+                }
+            }
+        }
+        
         async function processChunkWithRetry(chunk, voiceName, chunkIndex, totalChunks) {
             let lastError = null;
             
@@ -981,13 +1200,8 @@
                 try {
                     const response = await fetch('/.netlify/functions/text-to-speech', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            text: chunk,
-                            voiceName: voiceName
-                        })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: chunk, voiceName: voiceName })
                     });
                     
                     if (!response.ok) {
@@ -1000,22 +1214,44 @@
                     
                 } catch (error) {
                     lastError = error;
-                    console.error(`Intento ${attempt}/${MAX_RETRIES} falló para fragmento ${chunkIndex + 1}/${totalChunks}:`, error);
+                    console.error(`Intento ${attempt}/${MAX_RETRIES} falló:`, error);
                     
-                    // Si no es el último intento, esperar antes de reintentar
                     if (attempt < MAX_RETRIES) {
-                        const waitTime = attempt * 3000; // 3s, 6s progresivo
-                        console.log(`Esperando ${waitTime}ms antes de reintentar...`);
+                        const waitTime = attempt * 3000;
                         await sleep(waitTime);
                     }
                 }
             }
             
-            // Si llegamos aquí, todos los reintentos fallaron
-            throw new Error(`Fragmento ${chunkIndex + 1}/${totalChunks} falló después de ${MAX_RETRIES} intentos: ${lastError.message}`);
+            throw new Error(`Fragmento ${chunkIndex + 1}/${totalChunks} falló: ${lastError.message}`);
         }
         
-        // Generar audio
+        async function generateSinglePartAudio(partText, voiceName) {
+            const chunks = splitTextIntoChunks(partText, MAX_CHARS_PER_REQUEST);
+            const audioChunks = [];
+            
+            for (let i = 0; i < chunks.length; i++) {
+                const audioContent = await processChunkWithRetry(chunks[i], voiceName, i, chunks.length);
+                audioChunks.push(audioContent);
+                
+                if (i < chunks.length - 1) await sleep(500);
+            }
+            
+            const blobs = audioChunks.map(base64 => {
+                const binary = atob(base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+                return new Blob([bytes], { type: 'audio/mp3' });
+            });
+            
+            return new Blob(blobs, { type: 'audio/mp3' });
+        }
+        
+        // ============================================
+        // GENERACIÓN DE AUDIO
+        // ============================================
         async function generateAudio() {
             const text = textInput.value.trim();
             
@@ -1028,241 +1264,231 @@
             const selectedVoice = voiceSelect.value;
             const isPremiumVoice = isVoicePremium(selectedVoice);
             
-            // Advertencia para textos muy largos
-            if (charCount > 100000) {
-                if (!confirm(`⚠️ TEXTO MUY LARGO\n\nTu texto tiene ${charCount.toLocaleString()} caracteres. Esto generará aproximadamente ${Math.ceil(charCount / MAX_CHARS_PER_REQUEST)} fragmentos y tomará varios minutos.\n\nRecomendación: Considera dividir tu texto en partes más pequeñas para mayor estabilidad.\n\n¿Deseas continuar de todas formas?`)) {
-                    showStatus('Generación cancelada por el usuario.', 'error');
-                    return;
-                }
+            // Decidir: ¿modo multi-parte o simple?
+            if (charCount > AUTO_SPLIT_THRESHOLD) {
+                return await generateMultiPartAudio(text, selectedVoice, isPremiumVoice);
+            } else {
+                return await generateSingleAudio(text, selectedVoice, isPremiumVoice, charCount);
             }
+        }
+        
+        async function generateMultiPartAudio(text, selectedVoice, isPremiumVoice) {
+            const charCount = text.length;
             
-            // VERIFICACIÓN: Si seleccionó voz premium pero el modo premium NO está activado
+            // Verificaciones
             if (isPremiumVoice && !isPremiumMode) {
-                showStatus(
-                    '⛔ NO SE PUEDE GENERAR: Has seleccionado una voz premium (Studio/Journey) pero el Modo Premium está desactivado. ' +
-                    'Por favor activa el Modo Premium arriba o selecciona una voz gratuita (Neural2).',
-                    'error'
-                );
+                showStatus('⛔ Voz premium pero modo desactivado. Activa el Modo Premium.', 'error');
                 return;
             }
             
-            // Si la voz es PREMIUM (y el modo premium está activado)
             if (isPremiumVoice) {
                 const cost = calculateCost(charCount);
                 const spent = getMonthlySpending();
-                const budget = MONTHLY_BUDGET;
-                const remaining = budget - spent;
+                const remaining = MONTHLY_BUDGET - spent;
                 
-                // Verificar si excede el presupuesto
                 if (cost > remaining) {
-                    showStatus(
-                        `❌ PRESUPUESTO INSUFICIENTE: Este audio costaría $${cost.toFixed(4)} USD pero solo tienes $${remaining.toFixed(2)} USD disponibles de tu presupuesto mensual fijo de $${budget.toFixed(2)} USD. ` +
-                        `Tu presupuesto se renovará automáticamente el próximo mes.`,
-                        'error'
-                    );
+                    showStatus(`❌ PRESUPUESTO INSUFICIENTE: $${cost.toFixed(4)} > $${remaining.toFixed(2)}`, 'error');
                     return;
                 }
                 
-                // Confirmación de costo
-                const percentageOfBudget = (cost / budget * 100).toFixed(1);
-                const willRemain = remaining - cost;
-                
-                const confirmation = confirm(
-                    '💰 CONFIRMACIÓN DE COSTO - VOZ PREMIUM\n\n' +
-                    `Voz seleccionada: ${selectedVoice}\n\n` +
-                    `Este audio costará: $${cost.toFixed(4)} USD\n` +
-                    `(${charCount.toLocaleString()} caracteres × $0.000016)\n\n` +
-                    `Esto representa el ${percentageOfBudget}% de tu presupuesto mensual fijo de $${budget.toFixed(2)} USD\n\n` +
-                    `Después de este cargo:\n` +
-                    `• Gastado: $${(spent + cost).toFixed(2)} USD\n` +
-                    `• Disponible: $${willRemain.toFixed(2)} USD\n\n` +
-                    '¿Deseas continuar y generar el audio?'
-                );
-                
-                if (!confirmation) {
-                    showStatus('Generación cancelada por el usuario.', 'error');
+                if (!confirm(`💰 Modo Multi-Parte\n\nCosto: $${cost.toFixed(4)} USD\nQuedarán: $${(remaining - cost).toFixed(2)}\n\n¿Continuar?`)) {
+                    showStatus('Cancelado.', 'error');
                     return;
                 }
-            } 
-            // Si la voz es GRATUITA
-            else {
+            } else {
                 const currentUsage = getMonthlyUsage();
                 const remaining = MONTHLY_LIMIT - currentUsage;
                 
-                // PROTECCIÓN ESTRICTA: No permitir si excedería el límite
                 if (charCount > remaining) {
-                    showStatus(`❌ NO SE PUEDE GENERAR: Este texto tiene ${charCount.toLocaleString()} caracteres, pero solo te quedan ${remaining.toLocaleString()} caracteres disponibles este mes. Tu cuota se renovará el próximo mes.`, 'error');
+                    showStatus(`❌ Solo quedan ${remaining.toLocaleString()} caracteres este mes.`, 'error');
+                    return;
+                }
+            }
+            
+            // INICIAR MULTI-PARTE
+            generateBtn.disabled = true;
+            audioPlayer.classList.remove('show');
+            multiPartContainer.classList.add('show');
+            
+            const parts = splitTextIntoParts(text, MAX_CHARS_PER_PART);
+            const totalParts = parts.length;
+            
+            partsContainer.innerHTML = '';
+            generatedParts = [];
+            
+            const estimatedTime = Math.ceil(totalParts * 1.5);
+            splitInfo.innerHTML = `
+                <h4>📊 Tu texto será dividido en ${totalParts} partes</h4>
+                <p style="margin: 5px 0;">Total: ${charCount.toLocaleString()} caracteres</p>
+                <p style="margin: 5px 0;">⏱️ Tiempo estimado: ${estimatedTime}-${estimatedTime + 2} minutos</p>
+                <p style="margin: 5px 0; font-size: 0.9em; color: #666;">💡 Puedes descargar cada parte mientras se generan las siguientes</p>
+            `;
+            
+            parts.forEach((partText, index) => {
+                const card = createPartCard(index, totalParts, partText, partText.length);
+                partsContainer.appendChild(card);
+                generatedParts.push({ text: partText, blob: null, status: 'pending' });
+            });
+            
+            showStatus(`Generando ${totalParts} partes...`, 'loading');
+            progressBar.classList.add('show');
+            
+            let successCount = 0;
+            
+            for (let partIndex = 0; partIndex < totalParts; partIndex++) {
+                try {
+                    updatePartStatus(partIndex, 'generating', '🔄 Generando...');
+                    showStatus(`Parte ${partIndex + 1} de ${totalParts}...`, 'loading');
+                    
+                    const audioBlob = await generateSinglePartAudio(parts[partIndex], selectedVoice);
+                    
+                    generatedParts[partIndex].blob = audioBlob;
+                    generatedParts[partIndex].status = 'completed';
+                    
+                    updatePartStatus(partIndex, 'completed', '✅ Completada');
+                    showPartAudio(partIndex, audioBlob);
+                    
+                    successCount++;
+                    progressFill.style.width = `${((successCount / totalParts) * 100).toFixed(0)}%`;
+                    
+                    if (partIndex < totalParts - 1) await sleep(1000);
+                    
+                } catch (error) {
+                    console.error(`Error parte ${partIndex + 1}:`, error);
+                    updatePartStatus(partIndex, 'error', '❌ Error');
+                    generatedParts[partIndex].status = 'error';
+                    
+                    if (!confirm(`Error en parte ${partIndex + 1}.\n${error.message}\n\n¿Continuar con las demás?`)) {
+                        break;
+                    }
+                }
+            }
+            
+            progressBar.classList.remove('show');
+            generateBtn.disabled = false;
+            
+            if (successCount === totalParts) {
+                showStatus(`✅ ¡${totalParts} partes generadas!`, 'success');
+                downloadAllBtn.style.display = 'block';
+            } else if (successCount > 0) {
+                showStatus(`⚠️ ${successCount} de ${totalParts} completadas.`, 'error');
+                downloadAllBtn.style.display = 'block';
+            } else {
+                showStatus('❌ No se generó ninguna parte.', 'error');
+            }
+            
+            // Guardar uso
+            if (successCount > 0) {
+                const totalChars = generatedParts
+                    .filter(p => p.status === 'completed')
+                    .reduce((sum, p) => sum + p.text.length, 0);
+                
+                if (isPremiumVoice) {
+                    saveMonthlySpending(calculateCost(totalChars));
+                } else {
+                    saveMonthlyUsage(totalChars);
+                }
+            }
+        }
+        
+        async function generateSingleAudio(text, selectedVoice, isPremiumVoice, charCount) {
+            // Verificaciones
+            if (isPremiumVoice && !isPremiumMode) {
+                showStatus('⛔ Voz premium pero modo desactivado.', 'error');
+                return;
+            }
+            
+            if (isPremiumVoice) {
+                const cost = calculateCost(charCount);
+                const spent = getMonthlySpending();
+                const remaining = MONTHLY_BUDGET - spent;
+                
+                if (cost > remaining) {
+                    showStatus(`❌ INSUFICIENTE: $${cost.toFixed(4)} > $${remaining.toFixed(2)}`, 'error');
                     return;
                 }
                 
-                // ADVERTENCIA: Si está cerca del límite (>90%), advertir pero permitir
-                const percentageUsed = ((currentUsage + charCount) / MONTHLY_LIMIT) * 100;
-                if (percentageUsed > 90 && percentageUsed <= 100) {
-                    const willRemain = remaining - charCount;
-                    if (!confirm(`⚠️ ADVERTENCIA - VOZ GRATUITA\n\nVoz seleccionada: ${selectedVoice}\n\nDespués de generar este audio, habrás usado ${percentageUsed.toFixed(1)}% de tu cuota mensual gratuita y solo te quedarán ${willRemain.toLocaleString()} caracteres disponibles este mes.\n\n¿Estás seguro de que quieres continuar?`)) {
-                        showStatus('Generación cancelada por el usuario.', 'error');
+                if (!confirm(`💰 Costo: $${cost.toFixed(4)} USD\nQuedarán: $${(remaining - cost).toFixed(2)}\n\n¿Generar?`)) {
+                    showStatus('Cancelado.', 'error');
+                    return;
+                }
+            } else {
+                const currentUsage = getMonthlyUsage();
+                const remaining = MONTHLY_LIMIT - currentUsage;
+                
+                if (charCount > remaining) {
+                    showStatus(`❌ Solo quedan ${remaining.toLocaleString()} caracteres.`, 'error');
+                    return;
+                }
+                
+                if (((currentUsage + charCount) / MONTHLY_LIMIT) > 0.9) {
+                    if (!confirm(`⚠️ Usarás ${((currentUsage + charCount) / MONTHLY_LIMIT * 100).toFixed(1)}%. ¿Continuar?`)) {
+                        showStatus('Cancelado.', 'error');
                         return;
                     }
                 }
             }
             
-            // Dividir texto en fragmentos si es necesario
-            const chunks = splitTextIntoChunks(text, MAX_CHARS_PER_REQUEST);
-            
+            // Generar
             try {
                 generateBtn.disabled = true;
-                const chunks = splitTextIntoChunks(text, MAX_CHARS_PER_REQUEST);
-                
-                // Calcular tiempo estimado
-                const estimatedMinutes = Math.ceil((chunks.length * 3) / 60); // ~3 segundos por fragmento promedio
-                const timeWarning = chunks.length > 20 ? `\n⏱️ Tiempo estimado: ${estimatedMinutes}-${estimatedMinutes + 2} minutos` : '';
-                
-                showStatus(`Preparando generación de audio... (${chunks.length} fragmento${chunks.length > 1 ? 's' : ''})${timeWarning}`, 'loading');
-                progressBar.classList.add('show');
+                multiPartContainer.classList.remove('show');
                 audioPlayer.classList.remove('show');
+                
+                const chunks = splitTextIntoChunks(text, MAX_CHARS_PER_REQUEST);
+                const estimatedTime = Math.ceil(chunks.length * 0.5);
+                
+                showStatus(`Generando... (${chunks.length} fragmentos, ~${estimatedTime} min)`, 'loading');
+                progressBar.classList.add('show');
                 
                 const audioChunks = [];
                 
-                // Procesar cada fragmento con reintentos
                 for (let i = 0; i < chunks.length; i++) {
-                    const chunkProgress = ((i / chunks.length) * 100).toFixed(0);
-                    progressFill.style.width = `${chunkProgress}%`;
+                    progressFill.style.width = `${((i / chunks.length) * 100).toFixed(0)}%`;
+                    const audioContent = await processChunkWithRetry(chunks[i], selectedVoice, i, chunks.length);
+                    audioChunks.push(audioContent);
                     
-                    showStatus(
-                        `Generando audio... Fragmento ${i + 1} de ${chunks.length} (${chunkProgress}%)` +
-                        (chunks.length > 5 ? '\n⏱️ Esto puede tomar algunos minutos para textos largos...' : ''),
-                        'loading'
-                    );
-                    
-                    try {
-                        const audioContent = await processChunkWithRetry(chunks[i], voiceSelect.value, i, chunks.length);
-                        audioChunks.push(audioContent);
-                        
-                        // Actualizar progreso
-                        const completedProgress = (((i + 1) / chunks.length) * 100).toFixed(0);
-                        progressFill.style.width = `${completedProgress}%`;
-                        
-                    } catch (error) {
-                        // Si falla un fragmento después de todos los reintentos, mostrar error específico
-                        throw new Error(`Error al procesar fragmento ${i + 1}/${chunks.length}: ${error.message}`);
-                    }
-                    
-                    // Pausa entre fragmentos para no sobrecargar el servidor
-                    if (i < chunks.length - 1) {
-                        await sleep(1000); // 1 segundo entre fragmentos
-                    }
+                    if (i < chunks.length - 1) await sleep(500);
                 }
                 
-                // Si hay múltiples fragmentos, necesitamos concatenarlos
-                if (audioChunks.length === 1) {
-                    // Un solo fragmento - proceso simple
-                    showStatus('Finalizando audio...', 'loading');
-                    
-                    const binary = atob(audioChunks[0]);
+                showStatus('Finalizando...', 'loading');
+                progressFill.style.width = '95%';
+                
+                const blobs = audioChunks.map(base64 => {
+                    const binary = atob(base64);
                     const bytes = new Uint8Array(binary.length);
                     for (let i = 0; i < binary.length; i++) {
                         bytes[i] = binary.charCodeAt(i);
                     }
-                    
-                    currentAudioBlob = new Blob([bytes], { type: 'audio/mp3' });
-                    
-                } else {
-                    // Múltiples fragmentos - concatenar
-                    showStatus(`Combinando ${audioChunks.length} fragmentos de audio...`, 'loading');
-                    progressFill.style.width = '95%';
-                    
-                    const blobs = audioChunks.map((base64, index) => {
-                        const binary = atob(base64);
-                        const bytes = new Uint8Array(binary.length);
-                        for (let i = 0; i < binary.length; i++) {
-                            bytes[i] = binary.charCodeAt(i);
-                        }
-                        return new Blob([bytes], { type: 'audio/mp3' });
-                    });
-                    
-                    currentAudioBlob = new Blob(blobs, { type: 'audio/mp3' });
-                }
+                    return new Blob([bytes], { type: 'audio/mp3' });
+                });
                 
-                // Crear URL y configurar reproductor
+                currentAudioBlob = new Blob(blobs, { type: 'audio/mp3' });
                 const audioUrl = URL.createObjectURL(currentAudioBlob);
                 audio.src = audioUrl;
                 audioPlayer.classList.add('show');
                 progressBar.classList.remove('show');
                 progressFill.style.width = '100%';
                 
-                // Guardar uso según el tipo de voz seleccionada
-                const isPremiumVoice = isVoicePremium(voiceSelect.value);
                 if (isPremiumVoice) {
                     const cost = calculateCost(charCount);
                     saveMonthlySpending(cost);
-                    showStatus(`✅ ¡Audio generado exitosamente! Costo: $${cost.toFixed(4)} USD`, 'success');
+                    showStatus(`✅ Generado! Costo: $${cost.toFixed(4)}`, 'success');
                 } else {
                     saveMonthlyUsage(charCount);
-                    showStatus('✅ ¡Audio generado exitosamente!', 'success');
+                    showStatus('✅ ¡Generado!', 'success');
                 }
                 
             } catch (error) {
-                console.error('Error completo:', error);
-                
-                // Mensajes de error más específicos
-                let errorMessage = 'Error al generar audio: ';
-                
-                if (error.message.includes('504') || error.message.includes('Timeout')) {
-                    errorMessage += 'Timeout persistente. ';
-                    if (charCount > 100000) {
-                        errorMessage += `Tu texto tiene ${charCount.toLocaleString()} caracteres. Por favor divídelo en textos más pequeños (máximo 60,000-80,000 caracteres o ~10,000-13,000 palabras por generación).`;
-                    } else if (charCount > 60000) {
-                        errorMessage += 'Tu texto es largo. Intenta dividirlo en dos partes más pequeñas para mayor estabilidad.';
-                    } else {
-                        errorMessage += 'Google está tardando mucho en responder. Intenta nuevamente en unos minutos o divide el texto en partes más pequeñas.';
-                    }
-                } else if (error.message.includes('fragmento')) {
-                    errorMessage += error.message;
-                } else if (error.message.includes('Failed to fetch')) {
-                    errorMessage += 'Problema de conexión. Verifica tu internet e intenta nuevamente.';
-                } else {
-                    errorMessage += error.message;
-                }
-                
-                showStatus(errorMessage, 'error');
+                console.error('Error:', error);
+                showStatus(`Error: ${error.message}`, 'error');
                 progressBar.classList.remove('show');
             } finally {
                 generateBtn.disabled = false;
             }
         }
         
-        // Descargar audio
-        function downloadAudio() {
-            if (!currentAudioBlob) return;
-            
-            const url = URL.createObjectURL(currentAudioBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `audio-${Date.now()}.mp3`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-        
-        // Limpiar todo
-        function clearAll() {
-            textInput.value = '';
-            fileInput.value = '';
-            updateCharCount();
-            audioPlayer.classList.remove('show');
-            status.classList.remove('show');
-            progressBar.classList.remove('show');
-            
-            if (audio.src) {
-                URL.revokeObjectURL(audio.src);
-                audio.src = '';
-            }
-            
-            currentAudioBlob = null;
-        }
-        
-        // Iniciar cuando el DOM esté listo
+        // INICIAR
         init();
     </script>
 </body>
