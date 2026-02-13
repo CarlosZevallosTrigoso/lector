@@ -272,6 +272,38 @@
             border-color: #667eea;
         }
         
+        .voice-indicator {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: none;
+            text-align: center;
+        }
+        
+        .voice-indicator.show {
+            display: block;
+        }
+        
+        .voice-indicator.free {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        
+        .voice-indicator.premium {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+        
+        .voice-indicator.premium-disabled {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
         .controls {
             display: flex;
             gap: 15px;
@@ -462,30 +494,33 @@
         <div class="voice-selector">
             <label for="voiceSelect">Selecciona una voz:</label>
             <select id="voiceSelect">
-                <!-- Voces Neural2 (Gratuitas) -->
-                <optgroup label="🆓 Neural2 (Gratuitas)" id="freeVoices">
-                    <option value="es-ES-Neural2-A">Español (España) - Femenina A</option>
-                    <option value="es-ES-Neural2-B">Español (España) - Masculina B</option>
-                    <option value="es-ES-Neural2-C">Español (España) - Femenina C</option>
-                    <option value="es-ES-Neural2-D">Español (España) - Femenina D</option>
-                    <option value="es-ES-Neural2-E">Español (España) - Femenina E</option>
-                    <option value="es-ES-Neural2-F">Español (España) - Masculina F</option>
-                    <option value="es-US-Neural2-A">Español (US) - Femenina A</option>
-                    <option value="es-US-Neural2-B">Español (US) - Masculina B</option>
-                    <option value="es-US-Neural2-C">Español (US) - Masculina C</option>
+                <!-- Voces Neural2 (Gratuitas) - SIEMPRE VISIBLES -->
+                <optgroup label="🆓 GRATUITAS - Neural2 (dentro de tu cuota mensual)" id="freeVoices">
+                    <option value="es-ES-Neural2-A">🆓 España - Femenina A</option>
+                    <option value="es-ES-Neural2-B">🆓 España - Masculina B</option>
+                    <option value="es-ES-Neural2-C">🆓 España - Femenina C</option>
+                    <option value="es-ES-Neural2-D">🆓 España - Femenina D</option>
+                    <option value="es-ES-Neural2-E">🆓 España - Femenina E</option>
+                    <option value="es-ES-Neural2-F">🆓 España - Masculina F</option>
+                    <option value="es-US-Neural2-A">🆓 US Latino - Femenina A</option>
+                    <option value="es-US-Neural2-B">🆓 US Latino - Masculina B</option>
+                    <option value="es-US-Neural2-C">🆓 US Latino - Masculina C</option>
                 </optgroup>
                 
-                <!-- Voces Studio/Journey (Premium) -->
-                <optgroup label="✨ Studio/Journey (Premium - $16/millón)" id="premiumVoices" style="display: none;">
-                    <option value="es-ES-Studio-C">Español (España) - Studio C - Femenina</option>
-                    <option value="es-ES-Studio-F">Español (España) - Studio F - Masculina</option>
-                    <option value="es-ES-Journey-D">Español (España) - Journey D - Femenina</option>
-                    <option value="es-ES-Journey-F">Español (España) - Journey F - Masculina</option>
-                    <option value="es-US-Studio-B">Español (US) - Studio B - Masculina</option>
-                    <option value="es-US-Journey-D">Español (US) - Journey D - Femenina</option>
-                    <option value="es-US-Journey-F">Español (US) - Journey F - Masculina</option>
+                <!-- Voces Studio/Journey (Premium) - SIEMPRE VISIBLES -->
+                <optgroup label="💰 PREMIUM - Studio/Journey ($16/millón caracteres)" id="premiumVoices">
+                    <option value="es-ES-Studio-C">💰 España - Studio C - Femenina (PAGO)</option>
+                    <option value="es-ES-Studio-F">💰 España - Studio F - Masculina (PAGO)</option>
+                    <option value="es-ES-Journey-D">💰 España - Journey D - Femenina (PAGO)</option>
+                    <option value="es-ES-Journey-F">💰 España - Journey F - Masculina (PAGO)</option>
+                    <option value="es-US-Studio-B">💰 US Latino - Studio B - Masculina (PAGO)</option>
+                    <option value="es-US-Journey-D">💰 US Latino - Journey D - Femenina (PAGO)</option>
+                    <option value="es-US-Journey-F">💰 US Latino - Journey F - Masculina (PAGO)</option>
                 </optgroup>
             </select>
+            
+            <!-- Indicador de tipo de voz seleccionada -->
+            <div class="voice-indicator" id="voiceIndicator"></div>
         </div>
         
         <!-- Controles -->
@@ -539,6 +574,7 @@
         const freeVoices = document.getElementById('freeVoices');
         const premiumVoices = document.getElementById('premiumVoices');
         const container = document.querySelector('.container');
+        const voiceIndicator = document.getElementById('voiceIndicator');
         
         let currentAudioBlob = null;
         let isPremiumMode = false;
@@ -549,6 +585,7 @@
             updateCharCount();
             updateBudgetDisplay();
             loadPremiumMode();
+            updateVoiceIndicator(); // Actualizar indicador al cargar
             
             // Event listeners
             textInput.addEventListener('input', () => {
@@ -560,6 +597,10 @@
             clearBtn.addEventListener('click', clearAll);
             downloadBtn.addEventListener('click', downloadAudio);
             premiumToggle.addEventListener('change', togglePremiumMode);
+            voiceSelect.addEventListener('change', () => {
+                updateVoiceIndicator();
+                updateCostPreview();
+            });
         }
         
         // Obtener gasto del mes actual (en USD)
@@ -607,6 +648,34 @@
             }
         }
         
+        // Verificar si la voz seleccionada es premium
+        function isVoicePremium(voiceName) {
+            return voiceName.includes('Studio') || voiceName.includes('Journey');
+        }
+        
+        // Actualizar indicador de voz
+        function updateVoiceIndicator() {
+            const selectedVoice = voiceSelect.value;
+            const isPremiumVoice = isVoicePremium(selectedVoice);
+            
+            if (isPremiumVoice) {
+                // Voz premium seleccionada
+                if (isPremiumMode) {
+                    // Modo premium activado - puede usar la voz
+                    voiceIndicator.className = 'voice-indicator show premium';
+                    voiceIndicator.innerHTML = '💰 <strong>VOZ DE PAGO SELECCIONADA</strong> - Se cobrará $16 por millón de caracteres';
+                } else {
+                    // Modo premium NO activado - no puede usar la voz
+                    voiceIndicator.className = 'voice-indicator show premium-disabled';
+                    voiceIndicator.innerHTML = '⛔ <strong>ADVERTENCIA:</strong> Esta es una voz de pago pero el Modo Premium está desactivado. Activa el Modo Premium arriba para poder usarla.';
+                }
+            } else {
+                // Voz gratuita seleccionada
+                voiceIndicator.className = 'voice-indicator show free';
+                voiceIndicator.innerHTML = '🆓 <strong>VOZ GRATUITA SELECCIONADA</strong> - Dentro de tu cuota mensual de 100,000 caracteres';
+            }
+        }
+        
         // Guardar estado del modo premium
         function savePremiumMode() {
             localStorage.setItem('tts-premium-mode', premiumToggle.checked);
@@ -634,7 +703,11 @@
         
         // Actualizar preview de costo
         function updateCostPreview() {
-            if (!isPremiumMode) {
+            const selectedVoice = voiceSelect.value;
+            const isPremiumVoice = isVoicePremium(selectedVoice);
+            
+            // Solo mostrar preview de costo si es voz premium
+            if (!isPremiumVoice) {
                 costPreview.classList.remove('show');
                 return;
             }
@@ -642,6 +715,19 @@
             const text = textInput.value.trim();
             if (!text) {
                 costPreview.classList.remove('show');
+                return;
+            }
+            
+            // Si es voz premium pero el modo premium no está activado
+            if (!isPremiumMode) {
+                costPreview.innerHTML = `
+                    ⛔ <strong>ADVERTENCIA:</strong> Has seleccionado una voz premium pero el Modo Premium está desactivado. 
+                    Activa el Modo Premium arriba para poder usar esta voz.
+                `;
+                costPreview.style.background = '#f8d7da';
+                costPreview.style.borderColor = '#dc3545';
+                costPreview.style.color = '#721c24';
+                costPreview.classList.add('show');
                 return;
             }
             
@@ -719,14 +805,7 @@
         function activatePremiumMode() {
             isPremiumMode = true;
             container.classList.add('premium-active');
-            
-            // Cambiar a primera voz premium
-            voiceSelect.value = 'es-ES-Studio-C';
-            
-            // Mostrar/ocultar opciones de voces
-            freeVoices.style.display = 'none';
-            premiumVoices.style.display = 'block';
-            
+            updateVoiceIndicator();
             updateCostPreview();
         }
         
@@ -735,13 +814,12 @@
             isPremiumMode = false;
             container.classList.remove('premium-active');
             
-            // Cambiar a primera voz gratuita
-            voiceSelect.value = 'es-ES-Neural2-A';
+            // Si tiene una voz premium seleccionada, cambiar a voz gratuita
+            if (isVoicePremium(voiceSelect.value)) {
+                voiceSelect.value = 'es-ES-Neural2-A';
+            }
             
-            // Mostrar/ocultar opciones de voces
-            freeVoices.style.display = 'block';
-            premiumVoices.style.display = 'none';
-            
+            updateVoiceIndicator();
             costPreview.classList.remove('show');
         }
         
@@ -876,12 +954,24 @@
             }
             
             const charCount = text.length;
+            const selectedVoice = voiceSelect.value;
+            const isPremiumVoice = isVoicePremium(selectedVoice);
             
-            // Modo Premium
-            if (isPremiumMode) {
+            // VERIFICACIÓN: Si seleccionó voz premium pero el modo premium NO está activado
+            if (isPremiumVoice && !isPremiumMode) {
+                showStatus(
+                    '⛔ NO SE PUEDE GENERAR: Has seleccionado una voz premium (Studio/Journey) pero el Modo Premium está desactivado. ' +
+                    'Por favor activa el Modo Premium arriba o selecciona una voz gratuita (Neural2).',
+                    'error'
+                );
+                return;
+            }
+            
+            // Si la voz es PREMIUM (y el modo premium está activado)
+            if (isPremiumVoice) {
                 const cost = calculateCost(charCount);
                 const spent = getMonthlySpending();
-                const budget = MONTHLY_BUDGET; // Usar constante fija
+                const budget = MONTHLY_BUDGET;
                 const remaining = budget - spent;
                 
                 // Verificar si excede el presupuesto
@@ -899,7 +989,8 @@
                 const willRemain = remaining - cost;
                 
                 const confirmation = confirm(
-                    '💰 CONFIRMACIÓN DE COSTO\n\n' +
+                    '💰 CONFIRMACIÓN DE COSTO - VOZ PREMIUM\n\n' +
+                    `Voz seleccionada: ${selectedVoice}\n\n` +
                     `Este audio costará: $${cost.toFixed(4)} USD\n` +
                     `(${charCount.toLocaleString()} caracteres × $0.000016)\n\n` +
                     `Esto representa el ${percentageOfBudget}% de tu presupuesto mensual fijo de $${budget.toFixed(2)} USD\n\n` +
@@ -914,7 +1005,7 @@
                     return;
                 }
             } 
-            // Modo Gratuito
+            // Si la voz es GRATUITA
             else {
                 const currentUsage = getMonthlyUsage();
                 const remaining = MONTHLY_LIMIT - currentUsage;
@@ -929,7 +1020,7 @@
                 const percentageUsed = ((currentUsage + charCount) / MONTHLY_LIMIT) * 100;
                 if (percentageUsed > 90 && percentageUsed <= 100) {
                     const willRemain = remaining - charCount;
-                    if (!confirm(`⚠️ ADVERTENCIA: Después de generar este audio, habrás usado ${percentageUsed.toFixed(1)}% de tu cuota mensual y solo te quedarán ${willRemain.toLocaleString()} caracteres disponibles este mes.\n\n¿Estás seguro de que quieres continuar?`)) {
+                    if (!confirm(`⚠️ ADVERTENCIA - VOZ GRATUITA\n\nVoz seleccionada: ${selectedVoice}\n\nDespués de generar este audio, habrás usado ${percentageUsed.toFixed(1)}% de tu cuota mensual gratuita y solo te quedarán ${willRemain.toLocaleString()} caracteres disponibles este mes.\n\n¿Estás seguro de que quieres continuar?`)) {
                         showStatus('Generación cancelada por el usuario.', 'error');
                         return;
                     }
@@ -995,8 +1086,9 @@
                     progressBar.classList.remove('show');
                     generateBtn.disabled = false;
                     
-                    // Guardar uso según el modo
-                    if (isPremiumMode) {
+                    // Guardar uso según el tipo de voz seleccionada
+                    const isPremiumVoice = isVoicePremium(voiceSelect.value);
+                    if (isPremiumVoice) {
                         const cost = calculateCost(charCount);
                         saveMonthlySpending(cost);
                         showStatus(`¡Audio generado exitosamente! Costo: $${cost.toFixed(4)} USD`, 'success');
@@ -1019,11 +1111,11 @@
                 
                 audio.src = audioUrl;
                 audioPlayer.classList.add('show');
-                showStatus('¡Audio generado exitosamente!', 'success');
                 progressBar.classList.remove('show');
                 
-                // Guardar uso según el modo
-                if (isPremiumMode) {
+                // Guardar uso según el tipo de voz seleccionada
+                const isPremiumVoice = isVoicePremium(voiceSelect.value);
+                if (isPremiumVoice) {
                     const cost = calculateCost(charCount);
                     saveMonthlySpending(cost);
                     showStatus(`¡Audio generado exitosamente! Costo: $${cost.toFixed(4)} USD`, 'success');
