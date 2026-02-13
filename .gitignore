@@ -1,0 +1,22 @@
+# Dependencias de Node.js (si en el futuro usas paquetes npm)
+node_modules/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de logs
+*.log
+
+# Variables de entorno locales (nunca subir esto a Git)
+.env
+.env.local
+
+# Carpeta de build temporal
+.netlify/
+
+# Archivos de editor
+.vscode/
+.idea/
+*.swp
+*.swo
