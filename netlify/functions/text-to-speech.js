@@ -26,11 +26,11 @@ exports.handler = async (event, context) => {
         }
         
         // Validación más estricta del tamaño
-        if (text.length > 5000) {
+        if (text.length > 2000) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({ 
-                    error: `El texto no puede exceder 5000 caracteres por fragmento. Recibido: ${text.length} caracteres.` 
+                    error: `El texto no puede exceder 2000 caracteres por fragmento. Recibido: ${text.length} caracteres.` 
                 })
             };
         }
@@ -71,7 +71,7 @@ exports.handler = async (event, context) => {
         
         // Hacer la llamada a la API de Google con timeout explícito
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+        const timeout = setTimeout(() => controller.abort(), 9000); // 9 segundos timeout (máximo posible)
         
         try {
             const response = await fetch(
