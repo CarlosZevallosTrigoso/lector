@@ -350,6 +350,7 @@
             border-radius: 8px;
             margin-bottom: 20px;
             display: none;
+            white-space: pre-line;
         }
         
         .status.show {
@@ -545,10 +546,11 @@
     <script>
         // Configuración
         const MONTHLY_LIMIT = 100000; // Límite gratuito de caracteres mensuales con voces Neural2
-        const MAX_CHARS_PER_REQUEST = 5000; // Límite de Google por solicitud
+        const MAX_CHARS_PER_REQUEST = 3000; // Límite optimizado para evitar timeouts en Netlify
         const PREMIUM_COST_PER_MILLION = 16; // USD por millón de caracteres (Studio/Journey)
         const PREMIUM_COST_PER_CHAR = PREMIUM_COST_PER_MILLION / 1000000; // $0.000016 por carácter
         const MONTHLY_BUDGET = 16; // Presupuesto mensual FIJO en USD (no modificable)
+        const MAX_RETRIES = 3; // Número máximo de reintentos por fragmento
         
         // Elementos del DOM
         const textInput = document.getElementById('textInput');
@@ -919,17 +921,39 @@
             for (const paragraph of paragraphs) {
                 // Si un solo párrafo es más largo que el máximo, dividirlo por oraciones
                 if (paragraph.length > maxChars) {
+                    // Si el chunk actual tiene contenido, guardarlo primero
+                    if (currentChunk) {
+                        chunks.push(currentChunk.trim());
+                        currentChunk = '';
+                    }
+                    
                     const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
                     
                     for (const sentence of sentences) {
-                        if ((currentChunk + sentence).length > maxChars && currentChunk) {
+                        // Si una sola oración es muy larga, dividirla por palabras
+                        if (sentence.length > maxChars) {
+                            if (currentChunk) {
+                                chunks.push(currentChunk.trim());
+                                currentChunk = '';
+                            }
+                            
+                            const words = sentence.split(' ');
+                            for (const word of words) {
+                                if ((currentChunk + ' ' + word).length > maxChars && currentChunk) {
+                                    chunks.push(currentChunk.trim());
+                                    currentChunk = word;
+                                } else {
+                                    currentChunk += (currentChunk ? ' ' : '') + word;
+                                }
+                            }
+                        } else if ((currentChunk + sentence).length > maxChars && currentChunk) {
                             chunks.push(currentChunk.trim());
                             currentChunk = sentence;
                         } else {
                             currentChunk += sentence;
                         }
                     }
-                } else if ((currentChunk + paragraph).length > maxChars && currentChunk) {
+                } else if ((currentChunk + '\n\n' + paragraph).length > maxChars && currentChunk) {
                     chunks.push(currentChunk.trim());
                     currentChunk = paragraph;
                 } else {
@@ -942,6 +966,53 @@
             }
             
             return chunks;
+        }
+        
+        // Función auxiliar para esperar entre reintentos
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // Función para procesar un fragmento con reintentos
+        async function processChunkWithRetry(chunk, voiceName, chunkIndex, totalChunks) {
+            let lastError = null;
+            
+            for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                try {
+                    const response = await fetch('/.netlify/functions/text-to-speech', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: chunk,
+                            voiceName: voiceName
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || `Error HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    return data.audioContent;
+                    
+                } catch (error) {
+                    lastError = error;
+                    console.error(`Intento ${attempt}/${MAX_RETRIES} falló para fragmento ${chunkIndex + 1}/${totalChunks}:`, error);
+                    
+                    // Si no es el último intento, esperar antes de reintentar
+                    if (attempt < MAX_RETRIES) {
+                        const waitTime = attempt * 2000; // 2s, 4s, 6s...
+                        console.log(`Esperando ${waitTime}ms antes de reintentar...`);
+                        await sleep(waitTime);
+                    }
+                }
+            }
+            
+            // Si llegamos aquí, todos los reintentos fallaron
+            throw new Error(`Fragmento ${chunkIndex + 1}/${totalChunks} falló después de ${MAX_RETRIES} intentos: ${lastError.message}`);
         }
         
         // Generar audio
@@ -1032,45 +1103,63 @@
             
             try {
                 generateBtn.disabled = true;
-                showStatus(`Generando audio... (${chunks.length} fragmento${chunks.length > 1 ? 's' : ''})`, 'loading');
+                const chunks = splitTextIntoChunks(text, MAX_CHARS_PER_REQUEST);
+                
+                showStatus(`Preparando generación de audio... (${chunks.length} fragmento${chunks.length > 1 ? 's' : ''})`, 'loading');
                 progressBar.classList.add('show');
                 audioPlayer.classList.remove('show');
                 
                 const audioChunks = [];
                 
-                // Procesar cada fragmento
+                // Procesar cada fragmento con reintentos
                 for (let i = 0; i < chunks.length; i++) {
-                    progressFill.style.width = `${((i + 1) / chunks.length) * 100}%`;
+                    const chunkProgress = ((i / chunks.length) * 100).toFixed(0);
+                    progressFill.style.width = `${chunkProgress}%`;
                     
-                    // Llamar a la función de Netlify
-                    const response = await fetch('/.netlify/functions/text-to-speech', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            text: chunks[i],
-                            voiceName: voiceSelect.value
-                        })
-                    });
+                    showStatus(
+                        `Generando audio... Fragmento ${i + 1} de ${chunks.length} (${chunkProgress}%)` +
+                        (chunks.length > 5 ? '\n⏱️ Esto puede tomar algunos minutos para textos largos...' : ''),
+                        'loading'
+                    );
                     
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.error || 'Error al generar audio');
+                    try {
+                        const audioContent = await processChunkWithRetry(chunks[i], voiceSelect.value, i, chunks.length);
+                        audioChunks.push(audioContent);
+                        
+                        // Actualizar progreso
+                        const completedProgress = (((i + 1) / chunks.length) * 100).toFixed(0);
+                        progressFill.style.width = `${completedProgress}%`;
+                        
+                    } catch (error) {
+                        // Si falla un fragmento después de todos los reintentos, mostrar error específico
+                        throw new Error(`Error al procesar fragmento ${i + 1}/${chunks.length}: ${error.message}`);
                     }
                     
-                    const data = await response.json();
-                    audioChunks.push(data.audioContent);
+                    // Pequeña pausa entre fragmentos para no sobrecargar el servidor
+                    if (i < chunks.length - 1) {
+                        await sleep(500);
+                    }
                 }
                 
                 // Si hay múltiples fragmentos, necesitamos concatenarlos
-                let finalAudioBase64;
                 if (audioChunks.length === 1) {
-                    finalAudioBase64 = audioChunks[0];
+                    // Un solo fragmento - proceso simple
+                    showStatus('Finalizando audio...', 'loading');
+                    
+                    const binary = atob(audioChunks[0]);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        bytes[i] = binary.charCodeAt(i);
+                    }
+                    
+                    currentAudioBlob = new Blob([bytes], { type: 'audio/mp3' });
+                    
                 } else {
-                    // Para simplificar, vamos a concatenar los blobs
-                    // Esto funciona razonablemente bien para MP3
-                    const blobs = audioChunks.map(base64 => {
+                    // Múltiples fragmentos - concatenar
+                    showStatus(`Combinando ${audioChunks.length} fragmentos de audio...`, 'loading');
+                    progressFill.style.width = '95%';
+                    
+                    const blobs = audioChunks.map((base64, index) => {
                         const binary = atob(base64);
                         const bytes = new Uint8Array(binary.length);
                         for (let i = 0; i < binary.length; i++) {
@@ -1080,53 +1169,43 @@
                     });
                     
                     currentAudioBlob = new Blob(blobs, { type: 'audio/mp3' });
-                    const audioUrl = URL.createObjectURL(currentAudioBlob);
-                    audio.src = audioUrl;
-                    audioPlayer.classList.add('show');
-                    progressBar.classList.remove('show');
-                    generateBtn.disabled = false;
-                    
-                    // Guardar uso según el tipo de voz seleccionada
-                    const isPremiumVoice = isVoicePremium(voiceSelect.value);
-                    if (isPremiumVoice) {
-                        const cost = calculateCost(charCount);
-                        saveMonthlySpending(cost);
-                        showStatus(`¡Audio generado exitosamente! Costo: $${cost.toFixed(4)} USD`, 'success');
-                    } else {
-                        saveMonthlyUsage(charCount);
-                        showStatus('¡Audio generado exitosamente!', 'success');
-                    }
-                    return;
                 }
                 
-                // Crear el blob de audio
-                const binary = atob(finalAudioBase64);
-                const bytes = new Uint8Array(binary.length);
-                for (let i = 0; i < binary.length; i++) {
-                    bytes[i] = binary.charCodeAt(i);
-                }
-                
-                currentAudioBlob = new Blob([bytes], { type: 'audio/mp3' });
+                // Crear URL y configurar reproductor
                 const audioUrl = URL.createObjectURL(currentAudioBlob);
-                
                 audio.src = audioUrl;
                 audioPlayer.classList.add('show');
                 progressBar.classList.remove('show');
+                progressFill.style.width = '100%';
                 
                 // Guardar uso según el tipo de voz seleccionada
                 const isPremiumVoice = isVoicePremium(voiceSelect.value);
                 if (isPremiumVoice) {
                     const cost = calculateCost(charCount);
                     saveMonthlySpending(cost);
-                    showStatus(`¡Audio generado exitosamente! Costo: $${cost.toFixed(4)} USD`, 'success');
+                    showStatus(`✅ ¡Audio generado exitosamente! Costo: $${cost.toFixed(4)} USD`, 'success');
                 } else {
                     saveMonthlyUsage(charCount);
-                    showStatus('¡Audio generado exitosamente!', 'success');
+                    showStatus('✅ ¡Audio generado exitosamente!', 'success');
                 }
                 
             } catch (error) {
-                console.error('Error:', error);
-                showStatus(`Error: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+                
+                // Mensajes de error más específicos
+                let errorMessage = 'Error al generar audio: ';
+                
+                if (error.message.includes('504')) {
+                    errorMessage += 'Tiempo de espera agotado. Tu texto puede ser demasiado largo. Intenta dividirlo en partes más pequeñas (máximo 30,000 caracteres por generación).';
+                } else if (error.message.includes('fragmento')) {
+                    errorMessage += error.message;
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage += 'Problema de conexión. Verifica tu internet e intenta nuevamente.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showStatus(errorMessage, 'error');
                 progressBar.classList.remove('show');
             } finally {
                 generateBtn.disabled = false;
