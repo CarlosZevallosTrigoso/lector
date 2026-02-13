@@ -429,7 +429,7 @@
             
             <div class="budget-info" id="budgetInfo">
                 <div style="margin-bottom: 8px;">
-                    <strong>Presupuesto mensual:</strong> $<input type="number" id="monthlyBudget" value="16" min="1" max="100" step="1" style="width: 60px; padding: 4px; border: none; border-radius: 4px; text-align: center;"> USD
+                    <strong>Presupuesto mensual fijo:</strong> $16.00 USD (no modificable)
                 </div>
                 <div class="budget-bar">
                     <div class="budget-fill" id="budgetBar"></div>
@@ -437,7 +437,8 @@
                 <div id="budgetText" style="margin-top: 5px;">Gastado este mes: $0.00 de $16.00</div>
                 <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.9;">
                     💰 Costo: $16 por millón de caracteres ($0.000016 por carácter)<br>
-                    📝 Un texto de 60,000 caracteres ≈ $0.96 USD
+                    📝 Un texto de 60,000 caracteres ≈ $0.96 USD<br>
+                    🛡️ <strong>La aplicación bloqueará automáticamente cualquier generación que exceda este límite.</strong>
                 </div>
             </div>
         </div>
@@ -512,6 +513,7 @@
         const MAX_CHARS_PER_REQUEST = 5000; // Límite de Google por solicitud
         const PREMIUM_COST_PER_MILLION = 16; // USD por millón de caracteres (Studio/Journey)
         const PREMIUM_COST_PER_CHAR = PREMIUM_COST_PER_MILLION / 1000000; // $0.000016 por carácter
+        const MONTHLY_BUDGET = 16; // Presupuesto mensual FIJO en USD (no modificable)
         
         // Elementos del DOM
         const textInput = document.getElementById('textInput');
@@ -531,7 +533,6 @@
         
         // Elementos del modo premium
         const premiumToggle = document.getElementById('premiumToggle');
-        const monthlyBudget = document.getElementById('monthlyBudget');
         const budgetBar = document.getElementById('budgetBar');
         const budgetText = document.getElementById('budgetText');
         const costPreview = document.getElementById('costPreview');
@@ -559,10 +560,6 @@
             clearBtn.addEventListener('click', clearAll);
             downloadBtn.addEventListener('click', downloadAudio);
             premiumToggle.addEventListener('change', togglePremiumMode);
-            monthlyBudget.addEventListener('change', () => {
-                saveBudgetSetting();
-                updateBudgetDisplay();
-            });
         }
         
         // Obtener gasto del mes actual (en USD)
@@ -601,19 +598,6 @@
             return charCount * PREMIUM_COST_PER_CHAR;
         }
         
-        // Cargar configuración de presupuesto
-        function loadBudgetSetting() {
-            const saved = localStorage.getItem('tts-monthly-budget');
-            if (saved) {
-                monthlyBudget.value = parseFloat(saved);
-            }
-        }
-        
-        // Guardar configuración de presupuesto
-        function saveBudgetSetting() {
-            localStorage.setItem('tts-monthly-budget', monthlyBudget.value);
-        }
-        
         // Cargar estado del modo premium
         function loadPremiumMode() {
             const saved = localStorage.getItem('tts-premium-mode');
@@ -621,7 +605,6 @@
                 premiumToggle.checked = true;
                 activatePremiumMode();
             }
-            loadBudgetSetting();
         }
         
         // Guardar estado del modo premium
@@ -632,14 +615,14 @@
         // Actualizar display de presupuesto
         function updateBudgetDisplay() {
             const spent = getMonthlySpending();
-            const budget = parseFloat(monthlyBudget.value);
+            const budget = MONTHLY_BUDGET; // Usar constante fija
             const percentage = (spent / budget) * 100;
             
             budgetBar.style.width = `${Math.min(percentage, 100)}%`;
             budgetText.innerHTML = `Gastado este mes: <strong>$${spent.toFixed(2)}</strong> de <strong>$${budget.toFixed(2)}</strong> USD`;
             
             if (percentage >= 100) {
-                budgetText.innerHTML += '<br><strong style="color: #fff;">⛔ PRESUPUESTO AGOTADO</strong>';
+                budgetText.innerHTML += '<br><strong style="color: #fff;">⛔ PRESUPUESTO AGOTADO - No se puede generar más audio este mes</strong>';
                 budgetBar.style.background = '#dc3545';
             } else if (percentage > 90) {
                 budgetText.innerHTML += '<br><strong style="color: #fff;">⚠️ Quedan $' + (budget - spent).toFixed(2) + ' USD</strong>';
@@ -665,13 +648,13 @@
             const charCount = text.length;
             const cost = calculateCost(charCount);
             const spent = getMonthlySpending();
-            const budget = parseFloat(monthlyBudget.value);
+            const budget = MONTHLY_BUDGET; // Usar constante fija
             const remaining = budget - spent;
             
             if (cost > remaining) {
                 costPreview.innerHTML = `
                     ❌ <strong>NO SE PUEDE GENERAR:</strong> Este audio costaría <strong>$${cost.toFixed(4)} USD</strong> 
-                    pero solo tienes <strong>$${remaining.toFixed(2)} USD</strong> disponibles en tu presupuesto mensual.
+                    pero solo tienes <strong>$${remaining.toFixed(2)} USD</strong> disponibles en tu presupuesto mensual de <strong>$${budget.toFixed(2)} USD</strong>.
                 `;
                 costPreview.style.background = '#f8d7da';
                 costPreview.style.borderColor = '#dc3545';
@@ -680,7 +663,7 @@
                 costPreview.innerHTML = `
                     💰 Este audio costará aproximadamente <strong>$${cost.toFixed(4)} USD</strong> 
                     (${charCount.toLocaleString()} caracteres × $0.000016)<br>
-                    Después del cargo te quedarán <strong>$${(remaining - cost).toFixed(2)} USD</strong> de tu presupuesto mensual.
+                    Después del cargo te quedarán <strong>$${(remaining - cost).toFixed(2)} USD</strong> de tu presupuesto mensual de <strong>$${budget.toFixed(2)} USD</strong>.
                 `;
                 costPreview.style.background = '#fff3cd';
                 costPreview.style.borderColor = '#ffc107';
@@ -713,7 +696,8 @@
                     '• Las voces Studio/Journey cuestan $16 USD por millón de caracteres\n' +
                     '• Un texto de 60,000 caracteres cuesta aproximadamente $0.96 USD\n' +
                     '• Se te pedirá confirmación antes de cada generación\n' +
-                    '• Tu presupuesto mensual actual es $' + monthlyBudget.value + ' USD\n\n' +
+                    '• Tu presupuesto mensual FIJO es $' + MONTHLY_BUDGET.toFixed(2) + ' USD (no modificable)\n' +
+                    '• La aplicación bloqueará automáticamente cualquier generación que exceda este límite\n\n' +
                     'Este costo se cobrará a tu tarjeta registrada en Google Cloud.'
                 );
                 
@@ -897,14 +881,14 @@
             if (isPremiumMode) {
                 const cost = calculateCost(charCount);
                 const spent = getMonthlySpending();
-                const budget = parseFloat(monthlyBudget.value);
+                const budget = MONTHLY_BUDGET; // Usar constante fija
                 const remaining = budget - spent;
                 
                 // Verificar si excede el presupuesto
                 if (cost > remaining) {
                     showStatus(
-                        `❌ PRESUPUESTO INSUFICIENTE: Este audio costaría $${cost.toFixed(4)} USD pero solo tienes $${remaining.toFixed(2)} USD disponibles. ` +
-                        `Puedes aumentar tu presupuesto mensual o esperar hasta el próximo mes.`,
+                        `❌ PRESUPUESTO INSUFICIENTE: Este audio costaría $${cost.toFixed(4)} USD pero solo tienes $${remaining.toFixed(2)} USD disponibles de tu presupuesto mensual fijo de $${budget.toFixed(2)} USD. ` +
+                        `Tu presupuesto se renovará automáticamente el próximo mes.`,
                         'error'
                     );
                     return;
@@ -918,7 +902,7 @@
                     '💰 CONFIRMACIÓN DE COSTO\n\n' +
                     `Este audio costará: $${cost.toFixed(4)} USD\n` +
                     `(${charCount.toLocaleString()} caracteres × $0.000016)\n\n` +
-                    `Esto representa el ${percentageOfBudget}% de tu presupuesto mensual de $${budget.toFixed(2)} USD\n\n` +
+                    `Esto representa el ${percentageOfBudget}% de tu presupuesto mensual fijo de $${budget.toFixed(2)} USD\n\n` +
                     `Después de este cargo:\n` +
                     `• Gastado: $${(spent + cost).toFixed(2)} USD\n` +
                     `• Disponible: $${willRemain.toFixed(2)} USD\n\n` +
