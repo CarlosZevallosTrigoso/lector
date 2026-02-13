@@ -1,0 +1,9 @@
+{
+  "name": "text-to-speech-reader",
+  "version": "1.0.0",
+  "description": "Aplicación personal para convertir textos a audio usando Google Cloud Text-to-Speech",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "type": "commonjs"
+}
