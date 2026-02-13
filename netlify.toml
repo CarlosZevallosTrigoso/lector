@@ -1,0 +1,11 @@
+# Configuración de Netlify para el proyecto de Text-to-Speech
+
+[build]
+  # Como no necesitamos compilar nada, dejamos el comando vacío
+  command = ""
+  # La carpeta que se va a publicar (raíz del proyecto)
+  publish = "."
+
+[functions]
+  # Dónde encontrar las funciones de backend
+  directory = "netlify/functions"
