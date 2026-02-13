@@ -2,6 +2,9 @@
 // Por eso puede acceder de manera segura a la API key sin exponerla
 
 exports.handler = async (event, context) => {
+    // Configurar timeout más largo (máximo permitido es 10s en plan gratuito)
+    context.callbackWaitsForEmptyEventLoop = false;
+    
     // Solo permitir peticiones POST
     if (event.httpMethod !== 'POST') {
         return {
@@ -22,10 +25,13 @@ exports.handler = async (event, context) => {
             };
         }
         
+        // Validación más estricta del tamaño
         if (text.length > 5000) {
             return {
                 statusCode: 400,
-                body: JSON.stringify({ error: 'El texto no puede exceder 5000 caracteres por fragmento' })
+                body: JSON.stringify({ 
+                    error: `El texto no puede exceder 5000 caracteres por fragmento. Recibido: ${text.length} caracteres.` 
+                })
             };
         }
         
@@ -63,49 +69,82 @@ exports.handler = async (event, context) => {
             }
         };
         
-        // Hacer la llamada a la API de Google
-        const response = await fetch(
-            `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
-            {
-                method: 'POST',
+        // Hacer la llamada a la API de Google con timeout explícito
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+        
+        try {
+            const response = await fetch(
+                `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
+                }
+            );
+            
+            clearTimeout(timeout);
+            
+            // Verificar si la respuesta fue exitosa
+            if (!response.ok) {
+                const errorData = await response.text();
+                console.error('Error de Google API:', errorData);
+                
+                // Intentar parsear el error como JSON
+                let errorMessage = 'Error al generar audio con Google API';
+                try {
+                    const errorJson = JSON.parse(errorData);
+                    errorMessage = errorJson.error?.message || errorMessage;
+                } catch (e) {
+                    // Si no es JSON, usar el mensaje genérico
+                }
+                
+                return {
+                    statusCode: response.status,
+                    body: JSON.stringify({ 
+                        error: errorMessage,
+                        details: errorData 
+                    })
+                };
+            }
+            
+            // Obtener los datos de la respuesta
+            const data = await response.json();
+            
+            // Devolver el audio al frontend
+            // El audioContent viene en base64, que es perfecto para enviarlo de vuelta
+            return {
+                statusCode: 200,
                 headers: {
                     'Content-Type': 'application/json',
+                    // Permitir que el frontend acceda a esta función
+                    'Access-Control-Allow-Origin': '*',
+                    'Cache-Control': 'no-cache'
                 },
-                body: JSON.stringify(requestBody)
-            }
-        );
-        
-        // Verificar si la respuesta fue exitosa
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Error de Google API:', errorData);
-            
-            return {
-                statusCode: response.status,
-                body: JSON.stringify({ 
-                    error: 'Error al generar audio con Google API',
-                    details: errorData 
+                body: JSON.stringify({
+                    audioContent: data.audioContent,
+                    characterCount: text.length
                 })
             };
+            
+        } catch (fetchError) {
+            clearTimeout(timeout);
+            
+            if (fetchError.name === 'AbortError') {
+                console.error('Timeout al llamar a Google API');
+                return {
+                    statusCode: 504,
+                    body: JSON.stringify({ 
+                        error: 'Timeout al procesar el audio. El fragmento puede ser muy largo o Google está tardando demasiado en responder.'
+                    })
+                };
+            }
+            
+            throw fetchError;
         }
-        
-        // Obtener los datos de la respuesta
-        const data = await response.json();
-        
-        // Devolver el audio al frontend
-        // El audioContent viene en base64, que es perfecto para enviarlo de vuelta
-        return {
-            statusCode: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                // Permitir que el frontend acceda a esta función
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify({
-                audioContent: data.audioContent,
-                characterCount: text.length
-            })
-        };
         
     } catch (error) {
         console.error('Error en la función:', error);
