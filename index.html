@@ -546,11 +546,11 @@
     <script>
         // Configuración
         const MONTHLY_LIMIT = 100000; // Límite gratuito de caracteres mensuales con voces Neural2
-        const MAX_CHARS_PER_REQUEST = 3000; // Límite optimizado para evitar timeouts en Netlify
+        const MAX_CHARS_PER_REQUEST = 1500; // Límite muy conservador para evitar timeouts
         const PREMIUM_COST_PER_MILLION = 16; // USD por millón de caracteres (Studio/Journey)
         const PREMIUM_COST_PER_CHAR = PREMIUM_COST_PER_MILLION / 1000000; // $0.000016 por carácter
         const MONTHLY_BUDGET = 16; // Presupuesto mensual FIJO en USD (no modificable)
-        const MAX_RETRIES = 3; // Número máximo de reintentos por fragmento
+        const MAX_RETRIES = 2; // Reducir a 2 reintentos para no perder tanto tiempo
         
         // Elementos del DOM
         const textInput = document.getElementById('textInput');
@@ -1004,7 +1004,7 @@
                     
                     // Si no es el último intento, esperar antes de reintentar
                     if (attempt < MAX_RETRIES) {
-                        const waitTime = attempt * 2000; // 2s, 4s, 6s...
+                        const waitTime = attempt * 3000; // 3s, 6s progresivo
                         console.log(`Esperando ${waitTime}ms antes de reintentar...`);
                         await sleep(waitTime);
                     }
@@ -1027,6 +1027,14 @@
             const charCount = text.length;
             const selectedVoice = voiceSelect.value;
             const isPremiumVoice = isVoicePremium(selectedVoice);
+            
+            // Advertencia para textos muy largos
+            if (charCount > 100000) {
+                if (!confirm(`⚠️ TEXTO MUY LARGO\n\nTu texto tiene ${charCount.toLocaleString()} caracteres. Esto generará aproximadamente ${Math.ceil(charCount / MAX_CHARS_PER_REQUEST)} fragmentos y tomará varios minutos.\n\nRecomendación: Considera dividir tu texto en partes más pequeñas para mayor estabilidad.\n\n¿Deseas continuar de todas formas?`)) {
+                    showStatus('Generación cancelada por el usuario.', 'error');
+                    return;
+                }
+            }
             
             // VERIFICACIÓN: Si seleccionó voz premium pero el modo premium NO está activado
             if (isPremiumVoice && !isPremiumMode) {
@@ -1105,7 +1113,11 @@
                 generateBtn.disabled = true;
                 const chunks = splitTextIntoChunks(text, MAX_CHARS_PER_REQUEST);
                 
-                showStatus(`Preparando generación de audio... (${chunks.length} fragmento${chunks.length > 1 ? 's' : ''})`, 'loading');
+                // Calcular tiempo estimado
+                const estimatedMinutes = Math.ceil((chunks.length * 3) / 60); // ~3 segundos por fragmento promedio
+                const timeWarning = chunks.length > 20 ? `\n⏱️ Tiempo estimado: ${estimatedMinutes}-${estimatedMinutes + 2} minutos` : '';
+                
+                showStatus(`Preparando generación de audio... (${chunks.length} fragmento${chunks.length > 1 ? 's' : ''})${timeWarning}`, 'loading');
                 progressBar.classList.add('show');
                 audioPlayer.classList.remove('show');
                 
@@ -1135,9 +1147,9 @@
                         throw new Error(`Error al procesar fragmento ${i + 1}/${chunks.length}: ${error.message}`);
                     }
                     
-                    // Pequeña pausa entre fragmentos para no sobrecargar el servidor
+                    // Pausa entre fragmentos para no sobrecargar el servidor
                     if (i < chunks.length - 1) {
-                        await sleep(500);
+                        await sleep(1000); // 1 segundo entre fragmentos
                     }
                 }
                 
@@ -1195,8 +1207,15 @@
                 // Mensajes de error más específicos
                 let errorMessage = 'Error al generar audio: ';
                 
-                if (error.message.includes('504')) {
-                    errorMessage += 'Tiempo de espera agotado. Tu texto puede ser demasiado largo. Intenta dividirlo en partes más pequeñas (máximo 30,000 caracteres por generación).';
+                if (error.message.includes('504') || error.message.includes('Timeout')) {
+                    errorMessage += 'Timeout persistente. ';
+                    if (charCount > 100000) {
+                        errorMessage += `Tu texto tiene ${charCount.toLocaleString()} caracteres. Por favor divídelo en textos más pequeños (máximo 60,000-80,000 caracteres o ~10,000-13,000 palabras por generación).`;
+                    } else if (charCount > 60000) {
+                        errorMessage += 'Tu texto es largo. Intenta dividirlo en dos partes más pequeñas para mayor estabilidad.';
+                    } else {
+                        errorMessage += 'Google está tardando mucho en responder. Intenta nuevamente en unos minutos o divide el texto en partes más pequeñas.';
+                    }
                 } else if (error.message.includes('fragmento')) {
                     errorMessage += error.message;
                 } else if (error.message.includes('Failed to fetch')) {
