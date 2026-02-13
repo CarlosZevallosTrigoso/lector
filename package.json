@@ -1,9 +1,23 @@
 {
   "name": "text-to-speech-reader",
-  "version": "1.0.0",
-  "description": "Aplicación personal para convertir textos a audio usando Google Cloud Text-to-Speech",
+  "version": "2.0.0",
+  "description": "Aplicación de text-to-speech con Azure Cognitive Services",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "text-to-speech",
+    "azure",
+    "tts",
+    "netlify"
+  ],
+  "author": "Carlos",
+  "license": "MIT",
+  "dependencies": {
+    "microsoft-cognitiveservices-speech-sdk": "^1.34.1"
+  },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "type": "commonjs"
+  }
 }
