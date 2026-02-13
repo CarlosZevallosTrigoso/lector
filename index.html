@@ -74,6 +74,125 @@
             margin-top: 5px;
         }
         
+        .premium-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .premium-section h3 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .premium-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .toggle-label {
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.3);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #28a745;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .budget-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        
+        .budget-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .budget-fill {
+            background: white;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .premium-active {
+            border: 3px solid #f093fb;
+            box-shadow: 0 0 20px rgba(240, 147, 251, 0.3);
+        }
+        
+        .cost-preview {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .cost-preview.show {
+            display: block;
+        }
+        
+        .cost-preview strong {
+            color: #dc3545;
+            font-size: 1.2em;
+        }
+        
         .input-section {
             margin-bottom: 25px;
         }
@@ -286,7 +405,7 @@
         
         <!-- Información de uso -->
         <div class="usage-info">
-            <h3>📊 Uso del mes actual</h3>
+            <h3>📊 Uso del mes actual (Modo Gratuito)</h3>
             <div class="usage-bar">
                 <div class="usage-fill" id="usageBar"></div>
             </div>
@@ -295,6 +414,36 @@
                 💡 <strong>Nota:</strong> Tu cuota se renueva automáticamente el primer día de cada mes. La aplicación <strong>bloqueará automáticamente</strong> cualquier generación que exceda tu límite mensual de 100,000 caracteres.
             </div>
         </div>
+        
+        <!-- Sección Modo Premium -->
+        <div class="premium-section">
+            <h3>✨ Modo Premium - Voces Studio/Journey</h3>
+            
+            <div class="premium-toggle">
+                <span class="toggle-label">🎤 Activar Modo Premium</span>
+                <label class="switch">
+                    <input type="checkbox" id="premiumToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="budget-info" id="budgetInfo">
+                <div style="margin-bottom: 8px;">
+                    <strong>Presupuesto mensual:</strong> $<input type="number" id="monthlyBudget" value="16" min="1" max="100" step="1" style="width: 60px; padding: 4px; border: none; border-radius: 4px; text-align: center;"> USD
+                </div>
+                <div class="budget-bar">
+                    <div class="budget-fill" id="budgetBar"></div>
+                </div>
+                <div id="budgetText" style="margin-top: 5px;">Gastado este mes: $0.00 de $16.00</div>
+                <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.9;">
+                    💰 Costo: $16 por millón de caracteres ($0.000016 por carácter)<br>
+                    📝 Un texto de 60,000 caracteres ≈ $0.96 USD
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview de costo antes de generar -->
+        <div class="cost-preview" id="costPreview"></div>
         
         <!-- Área de texto -->
         <div class="input-section">
@@ -312,15 +461,29 @@
         <div class="voice-selector">
             <label for="voiceSelect">Selecciona una voz:</label>
             <select id="voiceSelect">
-                <option value="es-ES-Neural2-A">Español (España) - Femenina A - Neural</option>
-                <option value="es-ES-Neural2-B">Español (España) - Masculina B - Neural</option>
-                <option value="es-ES-Neural2-C">Femenina C - Neural</option>
-                <option value="es-ES-Neural2-D">Femenina D - Neural</option>
-                <option value="es-ES-Neural2-E">Femenina E - Neural</option>
-                <option value="es-ES-Neural2-F">Masculina F - Neural</option>
-                <option value="es-US-Neural2-A">Español (US) - Femenina - Neural</option>
-                <option value="es-US-Neural2-B">Español (US) - Masculina - Neural</option>
-                <option value="es-US-Neural2-C">Español (US) - Masculina C - Neural</option>
+                <!-- Voces Neural2 (Gratuitas) -->
+                <optgroup label="🆓 Neural2 (Gratuitas)" id="freeVoices">
+                    <option value="es-ES-Neural2-A">Español (España) - Femenina A</option>
+                    <option value="es-ES-Neural2-B">Español (España) - Masculina B</option>
+                    <option value="es-ES-Neural2-C">Español (España) - Femenina C</option>
+                    <option value="es-ES-Neural2-D">Español (España) - Femenina D</option>
+                    <option value="es-ES-Neural2-E">Español (España) - Femenina E</option>
+                    <option value="es-ES-Neural2-F">Español (España) - Masculina F</option>
+                    <option value="es-US-Neural2-A">Español (US) - Femenina A</option>
+                    <option value="es-US-Neural2-B">Español (US) - Masculina B</option>
+                    <option value="es-US-Neural2-C">Español (US) - Masculina C</option>
+                </optgroup>
+                
+                <!-- Voces Studio/Journey (Premium) -->
+                <optgroup label="✨ Studio/Journey (Premium - $16/millón)" id="premiumVoices" style="display: none;">
+                    <option value="es-ES-Studio-C">Español (España) - Studio C - Femenina</option>
+                    <option value="es-ES-Studio-F">Español (España) - Studio F - Masculina</option>
+                    <option value="es-ES-Journey-D">Español (España) - Journey D - Femenina</option>
+                    <option value="es-ES-Journey-F">Español (España) - Journey F - Masculina</option>
+                    <option value="es-US-Studio-B">Español (US) - Studio B - Masculina</option>
+                    <option value="es-US-Journey-D">Español (US) - Journey D - Femenina</option>
+                    <option value="es-US-Journey-F">Español (US) - Journey F - Masculina</option>
+                </optgroup>
             </select>
         </div>
         
@@ -347,6 +510,8 @@
         // Configuración
         const MONTHLY_LIMIT = 100000; // Límite gratuito de caracteres mensuales con voces Neural2
         const MAX_CHARS_PER_REQUEST = 5000; // Límite de Google por solicitud
+        const PREMIUM_COST_PER_MILLION = 16; // USD por millón de caracteres (Studio/Journey)
+        const PREMIUM_COST_PER_CHAR = PREMIUM_COST_PER_MILLION / 1000000; // $0.000016 por carácter
         
         // Elementos del DOM
         const textInput = document.getElementById('textInput');
@@ -364,19 +529,165 @@
         const usageBar = document.getElementById('usageBar');
         const usageText = document.getElementById('usageText');
         
+        // Elementos del modo premium
+        const premiumToggle = document.getElementById('premiumToggle');
+        const monthlyBudget = document.getElementById('monthlyBudget');
+        const budgetBar = document.getElementById('budgetBar');
+        const budgetText = document.getElementById('budgetText');
+        const costPreview = document.getElementById('costPreview');
+        const freeVoices = document.getElementById('freeVoices');
+        const premiumVoices = document.getElementById('premiumVoices');
+        const container = document.querySelector('.container');
+        
         let currentAudioBlob = null;
+        let isPremiumMode = false;
         
         // Inicializar la aplicación
         function init() {
             updateUsageDisplay();
             updateCharCount();
+            updateBudgetDisplay();
+            loadPremiumMode();
             
             // Event listeners
-            textInput.addEventListener('input', updateCharCount);
+            textInput.addEventListener('input', () => {
+                updateCharCount();
+                updateCostPreview();
+            });
             fileInput.addEventListener('change', handleFileUpload);
             generateBtn.addEventListener('click', generateAudio);
             clearBtn.addEventListener('click', clearAll);
             downloadBtn.addEventListener('click', downloadAudio);
+            premiumToggle.addEventListener('change', togglePremiumMode);
+            monthlyBudget.addEventListener('change', () => {
+                saveBudgetSetting();
+                updateBudgetDisplay();
+            });
+        }
+        
+        // Obtener gasto del mes actual (en USD)
+        function getMonthlySpending() {
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
+            const stored = localStorage.getItem('tts-premium-spending');
+            
+            if (stored) {
+                const data = JSON.parse(stored);
+                if (data.month === currentMonth) {
+                    return data.spent;
+                }
+            }
+            
+            return 0;
+        }
+        
+        // Guardar gasto del mes
+        function saveMonthlySpending(cost) {
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
+            const currentSpending = getMonthlySpending();
+            
+            const data = {
+                month: currentMonth,
+                spent: currentSpending + cost
+            };
+            
+            localStorage.setItem('tts-premium-spending', JSON.stringify(data));
+            updateBudgetDisplay();
+        }
+        
+        // Calcular costo de un texto
+        function calculateCost(charCount) {
+            return charCount * PREMIUM_COST_PER_CHAR;
+        }
+        
+        // Cargar configuración de presupuesto
+        function loadBudgetSetting() {
+            const saved = localStorage.getItem('tts-monthly-budget');
+            if (saved) {
+                monthlyBudget.value = parseFloat(saved);
+            }
+        }
+        
+        // Guardar configuración de presupuesto
+        function saveBudgetSetting() {
+            localStorage.setItem('tts-monthly-budget', monthlyBudget.value);
+        }
+        
+        // Cargar estado del modo premium
+        function loadPremiumMode() {
+            const saved = localStorage.getItem('tts-premium-mode');
+            if (saved === 'true') {
+                premiumToggle.checked = true;
+                activatePremiumMode();
+            }
+            loadBudgetSetting();
+        }
+        
+        // Guardar estado del modo premium
+        function savePremiumMode() {
+            localStorage.setItem('tts-premium-mode', premiumToggle.checked);
+        }
+        
+        // Actualizar display de presupuesto
+        function updateBudgetDisplay() {
+            const spent = getMonthlySpending();
+            const budget = parseFloat(monthlyBudget.value);
+            const percentage = (spent / budget) * 100;
+            
+            budgetBar.style.width = `${Math.min(percentage, 100)}%`;
+            budgetText.innerHTML = `Gastado este mes: <strong>$${spent.toFixed(2)}</strong> de <strong>$${budget.toFixed(2)}</strong> USD`;
+            
+            if (percentage >= 100) {
+                budgetText.innerHTML += '<br><strong style="color: #fff;">⛔ PRESUPUESTO AGOTADO</strong>';
+                budgetBar.style.background = '#dc3545';
+            } else if (percentage > 90) {
+                budgetText.innerHTML += '<br><strong style="color: #fff;">⚠️ Quedan $' + (budget - spent).toFixed(2) + ' USD</strong>';
+                budgetBar.style.background = '#ffc107';
+            } else {
+                budgetBar.style.background = 'white';
+            }
+        }
+        
+        // Actualizar preview de costo
+        function updateCostPreview() {
+            if (!isPremiumMode) {
+                costPreview.classList.remove('show');
+                return;
+            }
+            
+            const text = textInput.value.trim();
+            if (!text) {
+                costPreview.classList.remove('show');
+                return;
+            }
+            
+            const charCount = text.length;
+            const cost = calculateCost(charCount);
+            const spent = getMonthlySpending();
+            const budget = parseFloat(monthlyBudget.value);
+            const remaining = budget - spent;
+            
+            if (cost > remaining) {
+                costPreview.innerHTML = `
+                    ❌ <strong>NO SE PUEDE GENERAR:</strong> Este audio costaría <strong>$${cost.toFixed(4)} USD</strong> 
+                    pero solo tienes <strong>$${remaining.toFixed(2)} USD</strong> disponibles en tu presupuesto mensual.
+                `;
+                costPreview.style.background = '#f8d7da';
+                costPreview.style.borderColor = '#dc3545';
+                costPreview.style.color = '#721c24';
+            } else {
+                costPreview.innerHTML = `
+                    💰 Este audio costará aproximadamente <strong>$${cost.toFixed(4)} USD</strong> 
+                    (${charCount.toLocaleString()} caracteres × $0.000016)<br>
+                    Después del cargo te quedarán <strong>$${(remaining - cost).toFixed(2)} USD</strong> de tu presupuesto mensual.
+                `;
+                costPreview.style.background = '#fff3cd';
+                costPreview.style.borderColor = '#ffc107';
+                costPreview.style.color = '#856404';
+            }
+            
+            costPreview.classList.add('show');
         }
         
         // Actualizar contador de caracteres
@@ -390,6 +701,64 @@
             } else {
                 charCount.style.color = '#666';
             }
+        }
+        
+        // Toggle modo premium
+        function togglePremiumMode() {
+            if (premiumToggle.checked) {
+                // Activando modo premium
+                const confirmation = confirm(
+                    '⚠️ ACTIVAR MODO PREMIUM\n\n' +
+                    '¿Estás seguro de que quieres activar el Modo Premium?\n\n' +
+                    '• Las voces Studio/Journey cuestan $16 USD por millón de caracteres\n' +
+                    '• Un texto de 60,000 caracteres cuesta aproximadamente $0.96 USD\n' +
+                    '• Se te pedirá confirmación antes de cada generación\n' +
+                    '• Tu presupuesto mensual actual es $' + monthlyBudget.value + ' USD\n\n' +
+                    'Este costo se cobrará a tu tarjeta registrada en Google Cloud.'
+                );
+                
+                if (confirmation) {
+                    activatePremiumMode();
+                } else {
+                    premiumToggle.checked = false;
+                }
+            } else {
+                // Desactivando modo premium
+                deactivatePremiumMode();
+            }
+            
+            savePremiumMode();
+            updateCostPreview();
+        }
+        
+        // Activar modo premium
+        function activatePremiumMode() {
+            isPremiumMode = true;
+            container.classList.add('premium-active');
+            
+            // Cambiar a primera voz premium
+            voiceSelect.value = 'es-ES-Studio-C';
+            
+            // Mostrar/ocultar opciones de voces
+            freeVoices.style.display = 'none';
+            premiumVoices.style.display = 'block';
+            
+            updateCostPreview();
+        }
+        
+        // Desactivar modo premium
+        function deactivatePremiumMode() {
+            isPremiumMode = false;
+            container.classList.remove('premium-active');
+            
+            // Cambiar a primera voz gratuita
+            voiceSelect.value = 'es-ES-Neural2-A';
+            
+            // Mostrar/ocultar opciones de voces
+            freeVoices.style.display = 'block';
+            premiumVoices.style.display = 'none';
+            
+            costPreview.classList.remove('show');
         }
         
         // Manejar carga de archivo
@@ -523,22 +892,63 @@
             }
             
             const charCount = text.length;
-            const currentUsage = getMonthlyUsage();
-            const remaining = MONTHLY_LIMIT - currentUsage;
             
-            // PROTECCIÓN ESTRICTA: No permitir si excedería el límite
-            if (charCount > remaining) {
-                showStatus(`❌ NO SE PUEDE GENERAR: Este texto tiene ${charCount.toLocaleString()} caracteres, pero solo te quedan ${remaining.toLocaleString()} caracteres disponibles este mes. Tu cuota se renovará el próximo mes.`, 'error');
-                return;
-            }
-            
-            // ADVERTENCIA: Si está cerca del límite (>90%), advertir pero permitir
-            const percentageUsed = ((currentUsage + charCount) / MONTHLY_LIMIT) * 100;
-            if (percentageUsed > 90 && percentageUsed <= 100) {
-                const willRemain = remaining - charCount;
-                if (!confirm(`⚠️ ADVERTENCIA: Después de generar este audio, habrás usado ${percentageUsed.toFixed(1)}% de tu cuota mensual y solo te quedarán ${willRemain.toLocaleString()} caracteres disponibles este mes.\n\n¿Estás seguro de que quieres continuar?`)) {
+            // Modo Premium
+            if (isPremiumMode) {
+                const cost = calculateCost(charCount);
+                const spent = getMonthlySpending();
+                const budget = parseFloat(monthlyBudget.value);
+                const remaining = budget - spent;
+                
+                // Verificar si excede el presupuesto
+                if (cost > remaining) {
+                    showStatus(
+                        `❌ PRESUPUESTO INSUFICIENTE: Este audio costaría $${cost.toFixed(4)} USD pero solo tienes $${remaining.toFixed(2)} USD disponibles. ` +
+                        `Puedes aumentar tu presupuesto mensual o esperar hasta el próximo mes.`,
+                        'error'
+                    );
+                    return;
+                }
+                
+                // Confirmación de costo
+                const percentageOfBudget = (cost / budget * 100).toFixed(1);
+                const willRemain = remaining - cost;
+                
+                const confirmation = confirm(
+                    '💰 CONFIRMACIÓN DE COSTO\n\n' +
+                    `Este audio costará: $${cost.toFixed(4)} USD\n` +
+                    `(${charCount.toLocaleString()} caracteres × $0.000016)\n\n` +
+                    `Esto representa el ${percentageOfBudget}% de tu presupuesto mensual de $${budget.toFixed(2)} USD\n\n` +
+                    `Después de este cargo:\n` +
+                    `• Gastado: $${(spent + cost).toFixed(2)} USD\n` +
+                    `• Disponible: $${willRemain.toFixed(2)} USD\n\n` +
+                    '¿Deseas continuar y generar el audio?'
+                );
+                
+                if (!confirmation) {
                     showStatus('Generación cancelada por el usuario.', 'error');
                     return;
+                }
+            } 
+            // Modo Gratuito
+            else {
+                const currentUsage = getMonthlyUsage();
+                const remaining = MONTHLY_LIMIT - currentUsage;
+                
+                // PROTECCIÓN ESTRICTA: No permitir si excedería el límite
+                if (charCount > remaining) {
+                    showStatus(`❌ NO SE PUEDE GENERAR: Este texto tiene ${charCount.toLocaleString()} caracteres, pero solo te quedan ${remaining.toLocaleString()} caracteres disponibles este mes. Tu cuota se renovará el próximo mes.`, 'error');
+                    return;
+                }
+                
+                // ADVERTENCIA: Si está cerca del límite (>90%), advertir pero permitir
+                const percentageUsed = ((currentUsage + charCount) / MONTHLY_LIMIT) * 100;
+                if (percentageUsed > 90 && percentageUsed <= 100) {
+                    const willRemain = remaining - charCount;
+                    if (!confirm(`⚠️ ADVERTENCIA: Después de generar este audio, habrás usado ${percentageUsed.toFixed(1)}% de tu cuota mensual y solo te quedarán ${willRemain.toLocaleString()} caracteres disponibles este mes.\n\n¿Estás seguro de que quieres continuar?`)) {
+                        showStatus('Generación cancelada por el usuario.', 'error');
+                        return;
+                    }
                 }
             }
             
@@ -598,12 +1008,18 @@
                     const audioUrl = URL.createObjectURL(currentAudioBlob);
                     audio.src = audioUrl;
                     audioPlayer.classList.add('show');
-                    showStatus('¡Audio generado exitosamente!', 'success');
                     progressBar.classList.remove('show');
                     generateBtn.disabled = false;
                     
-                    // Guardar uso
-                    saveMonthlyUsage(charCount);
+                    // Guardar uso según el modo
+                    if (isPremiumMode) {
+                        const cost = calculateCost(charCount);
+                        saveMonthlySpending(cost);
+                        showStatus(`¡Audio generado exitosamente! Costo: $${cost.toFixed(4)} USD`, 'success');
+                    } else {
+                        saveMonthlyUsage(charCount);
+                        showStatus('¡Audio generado exitosamente!', 'success');
+                    }
                     return;
                 }
                 
@@ -622,8 +1038,15 @@
                 showStatus('¡Audio generado exitosamente!', 'success');
                 progressBar.classList.remove('show');
                 
-                // Guardar uso
-                saveMonthlyUsage(charCount);
+                // Guardar uso según el modo
+                if (isPremiumMode) {
+                    const cost = calculateCost(charCount);
+                    saveMonthlySpending(cost);
+                    showStatus(`¡Audio generado exitosamente! Costo: $${cost.toFixed(4)} USD`, 'success');
+                } else {
+                    saveMonthlyUsage(charCount);
+                    showStatus('¡Audio generado exitosamente!', 'success');
+                }
                 
             } catch (error) {
                 console.error('Error:', error);
