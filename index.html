@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lector de Textos - TTS Multi-Parte</title>
+    <title>Lector de Textos - Azure TTS</title>
     <style>
         * {
             margin: 0;
@@ -41,15 +41,15 @@
         }
         
         .usage-info {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
+            background: #e7f3ff;
+            border-left: 4px solid #0078d4;
             padding: 15px;
             margin-bottom: 25px;
             border-radius: 5px;
         }
         
         .usage-info h3 {
-            color: #667eea;
+            color: #0078d4;
             margin-bottom: 10px;
             font-size: 1.1em;
         }
@@ -63,7 +63,7 @@
         }
         
         .usage-fill {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #0078d4, #005a9e);
             height: 100%;
             transition: width 0.3s ease;
         }
@@ -72,125 +72,6 @@
             font-size: 0.9em;
             color: #666;
             margin-top: 5px;
-        }
-        
-        .premium-section {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-        
-        .premium-section h3 {
-            color: white;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-        
-        .premium-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .toggle-label {
-            font-weight: 600;
-            font-size: 1.05em;
-        }
-        
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-        
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.3);
-            transition: .4s;
-            border-radius: 34px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider {
-            background-color: #28a745;
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        
-        .budget-info {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.9em;
-        }
-        
-        .budget-bar {
-            background: rgba(255, 255, 255, 0.3);
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        
-        .budget-fill {
-            background: white;
-            height: 100%;
-            transition: width 0.3s ease;
-        }
-        
-        .premium-active {
-            border: 3px solid #f093fb;
-            box-shadow: 0 0 20px rgba(240, 147, 251, 0.3);
-        }
-        
-        .cost-preview {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            color: #856404;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            display: none;
-        }
-        
-        .cost-preview.show {
-            display: block;
-        }
-        
-        .cost-preview strong {
-            color: #dc3545;
-            font-size: 1.2em;
         }
         
         .input-section {
@@ -270,38 +151,6 @@
         select:focus {
             outline: none;
             border-color: #667eea;
-        }
-        
-        .voice-indicator {
-            margin-top: 10px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.9em;
-            font-weight: 600;
-            display: none;
-            text-align: center;
-        }
-        
-        .voice-indicator.show {
-            display: block;
-        }
-        
-        .voice-indicator.free {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #28a745;
-        }
-        
-        .voice-indicator.premium {
-            background: #fff3cd;
-            color: #856404;
-            border: 2px solid #ffc107;
-        }
-        
-        .voice-indicator.premium-disabled {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #dc3545;
         }
         
         .controls {
@@ -576,51 +425,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎧 Lector de Textos Multi-Parte</h1>
-        <p class="subtitle">Convierte tus textos largos a múltiples archivos MP3 de alta calidad</p>
+        <h1>🎧 Lector de Textos con Azure</h1>
+        <p class="subtitle">Convierte tus textos a audio MP3 con voces neurales de alta calidad • 500,000 caracteres/mes GRATIS</p>
         
-        <!-- Información de uso gratuito -->
+        <!-- Información de uso -->
         <div class="usage-info">
-            <h3>📊 Uso del mes actual (Modo Gratuito)</h3>
+            <h3>📊 Uso del mes actual (Azure Cognitive Services - Gratis)</h3>
             <div class="usage-bar">
                 <div class="usage-fill" id="usageBar"></div>
             </div>
             <div class="usage-text" id="usageText">Cargando...</div>
             <div style="margin-top: 10px; font-size: 0.85em; color: #888;">
-                💡 <strong>Nota:</strong> Tu cuota se renueva automáticamente el primer día de cada mes. Textos mayores a 30,000 caracteres se dividirán automáticamente en múltiples MP3.
+                💡 <strong>500,000 caracteres/mes gratis</strong> con voces neurales premium. Textos mayores a 30,000 caracteres se dividen automáticamente en múltiples archivos MP3.
             </div>
         </div>
-        
-        <!-- Sección Modo Premium -->
-        <div class="premium-section">
-            <h3>✨ Modo Premium - Voces Studio/Journey</h3>
-            
-            <div class="premium-toggle">
-                <span class="toggle-label">🎤 Activar Modo Premium</span>
-                <label class="switch">
-                    <input type="checkbox" id="premiumToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            
-            <div class="budget-info" id="budgetInfo">
-                <div style="margin-bottom: 8px;">
-                    <strong>Presupuesto mensual fijo:</strong> $16.00 USD (no modificable)
-                </div>
-                <div class="budget-bar">
-                    <div class="budget-fill" id="budgetBar"></div>
-                </div>
-                <div id="budgetText" style="margin-top: 5px;">Gastado este mes: $0.00 de $16.00</div>
-                <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.9;">
-                    💰 Costo: $16 por millón de caracteres<br>
-                    📝 Un texto de 60,000 caracteres ≈ $0.96 USD<br>
-                    🛡️ <strong>La aplicación bloqueará automáticamente cualquier generación que exceda este límite.</strong>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Preview de costo -->
-        <div class="cost-preview" id="costPreview"></div>
         
         <!-- Área de texto -->
         <div class="input-section">
@@ -638,30 +456,34 @@
         <div class="voice-selector">
             <label for="voiceSelect">Selecciona una voz:</label>
             <select id="voiceSelect">
-                <optgroup label="🆓 GRATUITAS - Neural2 (dentro de tu cuota mensual)">
-                    <option value="es-ES-Neural2-A">🆓 España - Femenina A</option>
-                    <option value="es-ES-Neural2-B">🆓 España - Masculina B</option>
-                    <option value="es-ES-Neural2-C">🆓 España - Femenina C</option>
-                    <option value="es-ES-Neural2-D">🆓 España - Femenina D</option>
-                    <option value="es-ES-Neural2-E">🆓 España - Femenina E</option>
-                    <option value="es-ES-Neural2-F">🆓 España - Masculina F</option>
-                    <option value="es-US-Neural2-A">🆓 US Latino - Femenina A</option>
-                    <option value="es-US-Neural2-B">🆓 US Latino - Masculina B</option>
-                    <option value="es-US-Neural2-C">🆓 US Latino - Masculina C</option>
+                <optgroup label="🇪🇸 España - Voces Neurales">
+                    <option value="es-ES-ElviraNeural">Elvira - Femenina (España)</option>
+                    <option value="es-ES-AlvaroNeural">Álvaro - Masculina (España)</option>
+                    <option value="es-ES-AbrilNeural">Abril - Femenina (España)</option>
+                    <option value="es-ES-ArnauNeural">Arnau - Masculina (España)</option>
                 </optgroup>
                 
-                <optgroup label="💰 PREMIUM - Studio/Journey ($16/millón caracteres)">
-                    <option value="es-ES-Studio-C">💰 España - Studio C - Femenina (PAGO)</option>
-                    <option value="es-ES-Studio-F">💰 España - Studio F - Masculina (PAGO)</option>
-                    <option value="es-ES-Journey-D">💰 España - Journey D - Femenina (PAGO)</option>
-                    <option value="es-ES-Journey-F">💰 España - Journey F - Masculina (PAGO)</option>
-                    <option value="es-US-Studio-B">💰 US Latino - Studio B - Masculina (PAGO)</option>
-                    <option value="es-US-Journey-D">💰 US Latino - Journey D - Femenina (PAGO)</option>
-                    <option value="es-US-Journey-F">💰 US Latino - Journey F - Masculina (PAGO)</option>
+                <optgroup label="🇲🇽 México - Voces Neurales">
+                    <option value="es-MX-DaliaNeural">Dalia - Femenina (México)</option>
+                    <option value="es-MX-JorgeNeural">Jorge - Masculina (México)</option>
+                    <option value="es-MX-BeatrizNeural">Beatriz - Femenina (México)</option>
+                </optgroup>
+                
+                <optgroup label="🇦🇷 Argentina - Voces Neurales">
+                    <option value="es-AR-ElenaNeural">Elena - Femenina (Argentina)</option>
+                    <option value="es-AR-TomasNeural">Tomás - Masculina (Argentina)</option>
+                </optgroup>
+                
+                <optgroup label="🇨🇴 Colombia - Voces Neurales">
+                    <option value="es-CO-SalomeNeural">Salomé - Femenina (Colombia)</option>
+                    <option value="es-CO-GonzaloNeural">Gonzalo - Masculina (Colombia)</option>
+                </optgroup>
+                
+                <optgroup label="🇵🇪 Perú - Voces Neurales">
+                    <option value="es-PE-CamilaNeural">Camila - Femenina (Perú)</option>
+                    <option value="es-PE-AlexNeural">Alex - Masculina (Perú)</option>
                 </optgroup>
             </select>
-            
-            <div class="voice-indicator" id="voiceIndicator"></div>
         </div>
         
         <!-- Controles -->
@@ -676,13 +498,13 @@
             <div class="progress-fill" id="progressFill"></div>
         </div>
         
-        <!-- Reproductor simple (para textos cortos) -->
+        <!-- Reproductor simple -->
         <div id="audioPlayer" class="audio-player">
             <audio id="audio" controls></audio>
             <button id="downloadBtn" class="download-btn">⬇️ Descargar MP3</button>
         </div>
         
-        <!-- Contenedor multi-parte (para textos largos) -->
+        <!-- Contenedor multi-parte -->
         <div id="multiPartContainer" class="multi-part-container">
             <div class="split-info" id="splitInfo"></div>
             <div id="partsContainer"></div>
@@ -693,21 +515,14 @@
     </div>
 
     <script>
-        // ============================================
         // CONFIGURACIÓN
-        // ============================================
-        const MONTHLY_LIMIT = 100000; // Límite gratuito mensual
-        const MAX_CHARS_PER_REQUEST = 1500; // Fragmentos internos pequeños
-        const MAX_CHARS_PER_PART = 20000; // Tamaño de cada PARTE (MP3 individual)
-        const AUTO_SPLIT_THRESHOLD = 30000; // Si excede esto, divide automáticamente
-        const PREMIUM_COST_PER_MILLION = 16;
-        const PREMIUM_COST_PER_CHAR = PREMIUM_COST_PER_MILLION / 1000000;
-        const MONTHLY_BUDGET = 16; // Presupuesto fijo
+        const MONTHLY_LIMIT = 500000; // Azure tier gratuito
+        const MAX_CHARS_PER_REQUEST = 2000; // Fragmentos para Azure
+        const MAX_CHARS_PER_PART = 20000; // Tamaño por MP3
+        const AUTO_SPLIT_THRESHOLD = 30000; // División automática
         const MAX_RETRIES = 2;
         
-        // ============================================
-        // ELEMENTOS DEL DOM
-        // ============================================
+        // ELEMENTOS DOM
         const textInput = document.getElementById('textInput');
         const fileInput = document.getElementById('fileInput');
         const charCount = document.getElementById('charCount');
@@ -722,56 +537,32 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const usageBar = document.getElementById('usageBar');
         const usageText = document.getElementById('usageText');
-        const premiumToggle = document.getElementById('premiumToggle');
-        const budgetBar = document.getElementById('budgetBar');
-        const budgetText = document.getElementById('budgetText');
-        const costPreview = document.getElementById('costPreview');
-        const voiceIndicator = document.getElementById('voiceIndicator');
-        const container = document.querySelector('.container');
-        
-        // Elementos multi-parte
         const multiPartContainer = document.getElementById('multiPartContainer');
         const splitInfo = document.getElementById('splitInfo');
         const partsContainer = document.getElementById('partsContainer');
         const downloadAllBtn = document.getElementById('downloadAllBtn');
         
         let currentAudioBlob = null;
-        let isPremiumMode = false;
         let generatedParts = [];
         
-        // ============================================
         // INICIALIZACIÓN
-        // ============================================
         function init() {
             updateUsageDisplay();
             updateCharCount();
-            updateBudgetDisplay();
-            loadPremiumMode();
-            updateVoiceIndicator();
             
-            textInput.addEventListener('input', () => {
-                updateCharCount();
-                updateCostPreview();
-            });
+            textInput.addEventListener('input', updateCharCount);
             fileInput.addEventListener('change', handleFileUpload);
             generateBtn.addEventListener('click', generateAudio);
             clearBtn.addEventListener('click', clearAll);
             downloadBtn.addEventListener('click', downloadAudio);
-            premiumToggle.addEventListener('change', togglePremiumMode);
-            voiceSelect.addEventListener('change', () => {
-                updateVoiceIndicator();
-                updateCostPreview();
-            });
             downloadAllBtn.addEventListener('click', downloadAllParts);
         }
         
-        // ============================================
-        // GESTIÓN DE USO Y PRESUPUESTO
-        // ============================================
+        // GESTIÓN DE USO
         function getMonthlyUsage() {
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
-            const stored = localStorage.getItem('tts-usage');
+            const stored = localStorage.getItem('tts-usage-azure');
             
             if (stored) {
                 const data = JSON.parse(stored);
@@ -785,7 +576,7 @@
             const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
             const currentUsage = getMonthlyUsage();
             
-            localStorage.setItem('tts-usage', JSON.stringify({
+            localStorage.setItem('tts-usage-azure', JSON.stringify({
                 month: currentMonth,
                 chars: currentUsage + charsUsed
             }));
@@ -803,196 +594,25 @@
             
             if (percentage >= 100) {
                 message += `<strong style="color: #dc3545;">⛔ LÍMITE ALCANZADO</strong>`;
-                usageBar.style.background = 'linear-gradient(90deg, #dc3545, #c82333)';
-                generateBtn.disabled = true;
+                usageBar.style.background = '#dc3545';
             } else if (percentage > 90) {
-                message += `<strong style="color: #dc3545;">⚠️ ADVERTENCIA:</strong> Quedan ${remaining.toLocaleString()} caracteres.`;
-                usageBar.style.background = 'linear-gradient(90deg, #dc3545, #c82333)';
+                message += `<strong style="color: #dc3545;">⚠️ Quedan ${remaining.toLocaleString()} caracteres.</strong>`;
+                usageBar.style.background = '#dc3545';
             } else if (percentage > 70) {
-                message += `<strong style="color: #ffc107;">⚠️ PRECAUCIÓN:</strong> Quedan ${remaining.toLocaleString()} caracteres.`;
-                usageBar.style.background = 'linear-gradient(90deg, #ffc107, #e0a800)';
+                message += `<strong style="color: #ffc107;">⚠️ Quedan ${remaining.toLocaleString()} caracteres.</strong>`;
+                usageBar.style.background = '#ffc107';
             } else {
                 message += `Te quedan ${remaining.toLocaleString()} caracteres. 🟢`;
-                usageBar.style.background = 'linear-gradient(90deg, #667eea, #764ba2)';
+                usageBar.style.background = 'linear-gradient(90deg, #0078d4, #005a9e)';
             }
             
             usageText.innerHTML = message;
         }
         
-        function getMonthlySpending() {
-            const now = new Date();
-            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
-            const stored = localStorage.getItem('tts-premium-spending');
-            
-            if (stored) {
-                const data = JSON.parse(stored);
-                if (data.month === currentMonth) return data.spent;
-            }
-            return 0;
-        }
-        
-        function saveMonthlySpending(cost) {
-            const now = new Date();
-            const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
-            const currentSpending = getMonthlySpending();
-            
-            localStorage.setItem('tts-premium-spending', JSON.stringify({
-                month: currentMonth,
-                spent: currentSpending + cost
-            }));
-            updateBudgetDisplay();
-        }
-        
-        function updateBudgetDisplay() {
-            const spent = getMonthlySpending();
-            const budget = MONTHLY_BUDGET;
-            const percentage = (spent / budget) * 100;
-            
-            budgetBar.style.width = `${Math.min(percentage, 100)}%`;
-            budgetText.innerHTML = `Gastado: <strong>$${spent.toFixed(2)}</strong> de <strong>$${budget.toFixed(2)}</strong>`;
-            
-            if (percentage >= 100) {
-                budgetText.innerHTML += '<br><strong style="color: #fff;">⛔ PRESUPUESTO AGOTADO</strong>';
-                budgetBar.style.background = '#dc3545';
-            } else if (percentage > 90) {
-                budgetText.innerHTML += '<br><strong style="color: #fff;">⚠️ Quedan $' + (budget - spent).toFixed(2) + '</strong>';
-                budgetBar.style.background = '#ffc107';
-            } else {
-                budgetBar.style.background = 'white';
-            }
-        }
-        
-        function calculateCost(charCount) {
-            return charCount * PREMIUM_COST_PER_CHAR;
-        }
-        
-        // ============================================
-        // MODO PREMIUM
-        // ============================================
-        function loadPremiumMode() {
-            const saved = localStorage.getItem('tts-premium-mode');
-            if (saved === 'true') {
-                premiumToggle.checked = true;
-                activatePremiumMode();
-            }
-        }
-        
-        function savePremiumMode() {
-            localStorage.setItem('tts-premium-mode', premiumToggle.checked);
-        }
-        
-        function togglePremiumMode() {
-            if (premiumToggle.checked) {
-                const confirmation = confirm(
-                    '⚠️ ACTIVAR MODO PREMIUM\n\n' +
-                    'Voces Studio/Journey cuestan $16 por millón de caracteres.\n' +
-                    'Presupuesto mensual FIJO: $16.00 USD\n' +
-                    'La app bloqueará automáticamente si excedes este límite.\n\n' +
-                    '¿Activar?'
-                );
-                
-                if (confirmation) {
-                    activatePremiumMode();
-                } else {
-                    premiumToggle.checked = false;
-                }
-            } else {
-                deactivatePremiumMode();
-            }
-            
-            savePremiumMode();
-            updateCostPreview();
-        }
-        
-        function activatePremiumMode() {
-            isPremiumMode = true;
-            container.classList.add('premium-active');
-            updateVoiceIndicator();
-            updateCostPreview();
-        }
-        
-        function deactivatePremiumMode() {
-            isPremiumMode = false;
-            container.classList.remove('premium-active');
-            
-            if (isVoicePremium(voiceSelect.value)) {
-                voiceSelect.value = 'es-ES-Neural2-A';
-            }
-            
-            updateVoiceIndicator();
-            costPreview.classList.remove('show');
-        }
-        
-        function isVoicePremium(voiceName) {
-            return voiceName.includes('Studio') || voiceName.includes('Journey');
-        }
-        
-        function updateVoiceIndicator() {
-            const selectedVoice = voiceSelect.value;
-            const isPremiumVoice = isVoicePremium(selectedVoice);
-            
-            if (isPremiumVoice) {
-                if (isPremiumMode) {
-                    voiceIndicator.className = 'voice-indicator show premium';
-                    voiceIndicator.innerHTML = '💰 <strong>VOZ DE PAGO SELECCIONADA</strong> - $16 por millón de caracteres';
-                } else {
-                    voiceIndicator.className = 'voice-indicator show premium-disabled';
-                    voiceIndicator.innerHTML = '⛔ <strong>ADVERTENCIA:</strong> Voz premium pero modo desactivado. Activa el Modo Premium arriba.';
-                }
-            } else {
-                voiceIndicator.className = 'voice-indicator show free';
-                voiceIndicator.innerHTML = '🆓 <strong>VOZ GRATUITA</strong> - Dentro de tu cuota de 100,000 caracteres/mes';
-            }
-        }
-        
-        function updateCostPreview() {
-            const selectedVoice = voiceSelect.value;
-            const isPremiumVoice = isVoicePremium(selectedVoice);
-            
-            if (!isPremiumVoice) {
-                costPreview.classList.remove('show');
-                return;
-            }
-            
-            const text = textInput.value.trim();
-            if (!text) {
-                costPreview.classList.remove('show');
-                return;
-            }
-            
-            if (!isPremiumMode) {
-                costPreview.innerHTML = '⛔ <strong>ADVERTENCIA:</strong> Voz premium seleccionada pero modo desactivado.';
-                costPreview.style.background = '#f8d7da';
-                costPreview.style.borderColor = '#dc3545';
-                costPreview.classList.add('show');
-                return;
-            }
-            
-            const charCount = text.length;
-            const cost = calculateCost(charCount);
-            const spent = getMonthlySpending();
-            const remaining = MONTHLY_BUDGET - spent;
-            
-            if (cost > remaining) {
-                costPreview.innerHTML = `❌ <strong>NO ALCANZA:</strong> Costaría $${cost.toFixed(4)} pero solo tienes $${remaining.toFixed(2)}.`;
-                costPreview.style.background = '#f8d7da';
-                costPreview.style.borderColor = '#dc3545';
-            } else {
-                costPreview.innerHTML = `💰 Costo: <strong>$${cost.toFixed(4)} USD</strong> (${charCount.toLocaleString()} × $0.000016)<br>Quedarán: $${(remaining - cost).toFixed(2)}`;
-                costPreview.style.background = '#fff3cd';
-                costPreview.style.borderColor = '#ffc107';
-            }
-            
-            costPreview.classList.add('show');
-        }
-        
-        // ============================================
         // INTERFAZ
-        // ============================================
         function updateCharCount() {
             const count = textInput.value.length;
             charCount.textContent = `${count.toLocaleString()} caracteres`;
-            charCount.style.color = count > 100000 ? '#dc3545' : '#666';
         }
         
         function handleFileUpload(e) {
@@ -1020,7 +640,6 @@
             multiPartContainer.classList.remove('show');
             status.classList.remove('show');
             progressBar.classList.remove('show');
-            costPreview.classList.remove('show');
             
             if (audio.src) {
                 URL.revokeObjectURL(audio.src);
@@ -1044,9 +663,7 @@
             URL.revokeObjectURL(url);
         }
         
-        // ============================================
         // FUNCIONES MULTI-PARTE
-        // ============================================
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
@@ -1217,8 +834,7 @@
                     console.error(`Intento ${attempt}/${MAX_RETRIES} falló:`, error);
                     
                     if (attempt < MAX_RETRIES) {
-                        const waitTime = attempt * 3000;
-                        await sleep(waitTime);
+                        await sleep(attempt * 2000);
                     }
                 }
             }
@@ -1234,7 +850,7 @@
                 const audioContent = await processChunkWithRetry(chunks[i], voiceName, i, chunks.length);
                 audioChunks.push(audioContent);
                 
-                if (i < chunks.length - 1) await sleep(500);
+                if (i < chunks.length - 1) await sleep(1000);
             }
             
             const blobs = audioChunks.map(base64 => {
@@ -1249,63 +865,32 @@
             return new Blob(blobs, { type: 'audio/mp3' });
         }
         
-        // ============================================
         // GENERACIÓN DE AUDIO
-        // ============================================
         async function generateAudio() {
             const text = textInput.value.trim();
             
             if (!text) {
-                showStatus('Por favor ingresa un texto para convertir.', 'error');
+                showStatus('Por favor ingresa un texto.', 'error');
                 return;
             }
             
             const charCount = text.length;
-            const selectedVoice = voiceSelect.value;
-            const isPremiumVoice = isVoicePremium(selectedVoice);
+            const currentUsage = getMonthlyUsage();
+            const remaining = MONTHLY_LIMIT - currentUsage;
             
-            // Decidir: ¿modo multi-parte o simple?
+            if (charCount > remaining) {
+                showStatus(`❌ Solo quedan ${remaining.toLocaleString()} caracteres este mes.`, 'error');
+                return;
+            }
+            
             if (charCount > AUTO_SPLIT_THRESHOLD) {
-                return await generateMultiPartAudio(text, selectedVoice, isPremiumVoice);
+                return await generateMultiPartAudio(text);
             } else {
-                return await generateSingleAudio(text, selectedVoice, isPremiumVoice, charCount);
+                return await generateSingleAudio(text, charCount);
             }
         }
         
-        async function generateMultiPartAudio(text, selectedVoice, isPremiumVoice) {
-            const charCount = text.length;
-            
-            // Verificaciones
-            if (isPremiumVoice && !isPremiumMode) {
-                showStatus('⛔ Voz premium pero modo desactivado. Activa el Modo Premium.', 'error');
-                return;
-            }
-            
-            if (isPremiumVoice) {
-                const cost = calculateCost(charCount);
-                const spent = getMonthlySpending();
-                const remaining = MONTHLY_BUDGET - spent;
-                
-                if (cost > remaining) {
-                    showStatus(`❌ PRESUPUESTO INSUFICIENTE: $${cost.toFixed(4)} > $${remaining.toFixed(2)}`, 'error');
-                    return;
-                }
-                
-                if (!confirm(`💰 Modo Multi-Parte\n\nCosto: $${cost.toFixed(4)} USD\nQuedarán: $${(remaining - cost).toFixed(2)}\n\n¿Continuar?`)) {
-                    showStatus('Cancelado.', 'error');
-                    return;
-                }
-            } else {
-                const currentUsage = getMonthlyUsage();
-                const remaining = MONTHLY_LIMIT - currentUsage;
-                
-                if (charCount > remaining) {
-                    showStatus(`❌ Solo quedan ${remaining.toLocaleString()} caracteres este mes.`, 'error');
-                    return;
-                }
-            }
-            
-            // INICIAR MULTI-PARTE
+        async function generateMultiPartAudio(text) {
             generateBtn.disabled = true;
             audioPlayer.classList.remove('show');
             multiPartContainer.classList.add('show');
@@ -1316,12 +901,11 @@
             partsContainer.innerHTML = '';
             generatedParts = [];
             
-            const estimatedTime = Math.ceil(totalParts * 1.5);
+            const estimatedTime = Math.ceil(totalParts * 1);
             splitInfo.innerHTML = `
-                <h4>📊 Tu texto será dividido en ${totalParts} partes</h4>
-                <p style="margin: 5px 0;">Total: ${charCount.toLocaleString()} caracteres</p>
-                <p style="margin: 5px 0;">⏱️ Tiempo estimado: ${estimatedTime}-${estimatedTime + 2} minutos</p>
-                <p style="margin: 5px 0; font-size: 0.9em; color: #666;">💡 Puedes descargar cada parte mientras se generan las siguientes</p>
+                <h4>📊 Dividido en ${totalParts} partes</h4>
+                <p>Total: ${text.length.toLocaleString()} caracteres</p>
+                <p>⏱️ Tiempo estimado: ${estimatedTime}-${estimatedTime + 2} minutos</p>
             `;
             
             parts.forEach((partText, index) => {
@@ -1340,7 +924,7 @@
                     updatePartStatus(partIndex, 'generating', '🔄 Generando...');
                     showStatus(`Parte ${partIndex + 1} de ${totalParts}...`, 'loading');
                     
-                    const audioBlob = await generateSinglePartAudio(parts[partIndex], selectedVoice);
+                    const audioBlob = await generateSinglePartAudio(parts[partIndex], voiceSelect.value);
                     
                     generatedParts[partIndex].blob = audioBlob;
                     generatedParts[partIndex].status = 'completed';
@@ -1358,9 +942,7 @@
                     updatePartStatus(partIndex, 'error', '❌ Error');
                     generatedParts[partIndex].status = 'error';
                     
-                    if (!confirm(`Error en parte ${partIndex + 1}.\n${error.message}\n\n¿Continuar con las demás?`)) {
-                        break;
-                    }
+                    if (!confirm(`Error en parte ${partIndex + 1}.\n${error.message}\n\n¿Continuar?`)) break;
                 }
             }
             
@@ -1373,82 +955,44 @@
             } else if (successCount > 0) {
                 showStatus(`⚠️ ${successCount} de ${totalParts} completadas.`, 'error');
                 downloadAllBtn.style.display = 'block';
-            } else {
-                showStatus('❌ No se generó ninguna parte.', 'error');
             }
             
-            // Guardar uso
             if (successCount > 0) {
                 const totalChars = generatedParts
                     .filter(p => p.status === 'completed')
                     .reduce((sum, p) => sum + p.text.length, 0);
-                
-                if (isPremiumVoice) {
-                    saveMonthlySpending(calculateCost(totalChars));
-                } else {
-                    saveMonthlyUsage(totalChars);
-                }
+                saveMonthlyUsage(totalChars);
             }
         }
         
-        async function generateSingleAudio(text, selectedVoice, isPremiumVoice, charCount) {
-            // Verificaciones
-            if (isPremiumVoice && !isPremiumMode) {
-                showStatus('⛔ Voz premium pero modo desactivado.', 'error');
-                return;
-            }
+        async function generateSingleAudio(text, charCount) {
+            const currentUsage = getMonthlyUsage();
             
-            if (isPremiumVoice) {
-                const cost = calculateCost(charCount);
-                const spent = getMonthlySpending();
-                const remaining = MONTHLY_BUDGET - spent;
-                
-                if (cost > remaining) {
-                    showStatus(`❌ INSUFICIENTE: $${cost.toFixed(4)} > $${remaining.toFixed(2)}`, 'error');
-                    return;
-                }
-                
-                if (!confirm(`💰 Costo: $${cost.toFixed(4)} USD\nQuedarán: $${(remaining - cost).toFixed(2)}\n\n¿Generar?`)) {
+            if (((currentUsage + charCount) / MONTHLY_LIMIT) > 0.9) {
+                if (!confirm(`⚠️ Usarás ${((currentUsage + charCount) / MONTHLY_LIMIT * 100).toFixed(1)}%. ¿Continuar?`)) {
                     showStatus('Cancelado.', 'error');
                     return;
                 }
-            } else {
-                const currentUsage = getMonthlyUsage();
-                const remaining = MONTHLY_LIMIT - currentUsage;
-                
-                if (charCount > remaining) {
-                    showStatus(`❌ Solo quedan ${remaining.toLocaleString()} caracteres.`, 'error');
-                    return;
-                }
-                
-                if (((currentUsage + charCount) / MONTHLY_LIMIT) > 0.9) {
-                    if (!confirm(`⚠️ Usarás ${((currentUsage + charCount) / MONTHLY_LIMIT * 100).toFixed(1)}%. ¿Continuar?`)) {
-                        showStatus('Cancelado.', 'error');
-                        return;
-                    }
-                }
             }
             
-            // Generar
             try {
                 generateBtn.disabled = true;
                 multiPartContainer.classList.remove('show');
                 audioPlayer.classList.remove('show');
                 
                 const chunks = splitTextIntoChunks(text, MAX_CHARS_PER_REQUEST);
-                const estimatedTime = Math.ceil(chunks.length * 0.5);
                 
-                showStatus(`Generando... (${chunks.length} fragmentos, ~${estimatedTime} min)`, 'loading');
+                showStatus(`Generando... (${chunks.length} fragmentos)`, 'loading');
                 progressBar.classList.add('show');
                 
                 const audioChunks = [];
                 
                 for (let i = 0; i < chunks.length; i++) {
                     progressFill.style.width = `${((i / chunks.length) * 100).toFixed(0)}%`;
-                    const audioContent = await processChunkWithRetry(chunks[i], selectedVoice, i, chunks.length);
+                    const audioContent = await processChunkWithRetry(chunks[i], voiceSelect.value, i, chunks.length);
                     audioChunks.push(audioContent);
                     
-                    if (i < chunks.length - 1) await sleep(500);
+                    if (i < chunks.length - 1) await sleep(1000);
                 }
                 
                 showStatus('Finalizando...', 'loading');
@@ -1470,14 +1014,8 @@
                 progressBar.classList.remove('show');
                 progressFill.style.width = '100%';
                 
-                if (isPremiumVoice) {
-                    const cost = calculateCost(charCount);
-                    saveMonthlySpending(cost);
-                    showStatus(`✅ Generado! Costo: $${cost.toFixed(4)}`, 'success');
-                } else {
-                    saveMonthlyUsage(charCount);
-                    showStatus('✅ ¡Generado!', 'success');
-                }
+                saveMonthlyUsage(charCount);
+                showStatus('✅ ¡Generado!', 'success');
                 
             } catch (error) {
                 console.error('Error:', error);
@@ -1488,7 +1026,6 @@
             }
         }
         
-        // INICIAR
         init();
     </script>
 </body>
