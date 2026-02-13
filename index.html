@@ -291,6 +291,9 @@
                 <div class="usage-fill" id="usageBar"></div>
             </div>
             <div class="usage-text" id="usageText">Cargando...</div>
+            <div style="margin-top: 10px; font-size: 0.85em; color: #888;">
+                💡 <strong>Nota:</strong> Tu cuota se renueva automáticamente el primer día de cada mes. La aplicación <strong>bloqueará automáticamente</strong> cualquier generación que exceda tu límite mensual de 100,000 caracteres.
+            </div>
         </div>
         
         <!-- Área de texto -->
@@ -438,22 +441,36 @@
         function updateUsageDisplay() {
             const used = getMonthlyUsage();
             const percentage = (used / MONTHLY_LIMIT) * 100;
+            const remaining = Math.max(0, MONTHLY_LIMIT - used);
             
             usageBar.style.width = `${Math.min(percentage, 100)}%`;
             
-            const remaining = Math.max(0, MONTHLY_LIMIT - used);
-            usageText.innerHTML = `
-                Has usado <strong>${used.toLocaleString()}</strong> de <strong>${MONTHLY_LIMIT.toLocaleString()}</strong> caracteres este mes.
-                <br>Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres disponibles.
-            `;
+            // Construir el mensaje base
+            let message = `Has usado <strong>${used.toLocaleString()}</strong> de <strong>${MONTHLY_LIMIT.toLocaleString()}</strong> caracteres este mes.<br>`;
             
-            if (percentage > 90) {
+            // Agregar mensaje según el nivel de uso
+            if (percentage >= 100) {
+                message += `<strong style="color: #dc3545;">⛔ LÍMITE ALCANZADO</strong> - No puedes generar más audio este mes. Tu cuota se renovará el próximo mes.`;
                 usageText.style.color = '#dc3545';
+                usageBar.style.background = 'linear-gradient(90deg, #dc3545, #c82333)';
+                generateBtn.disabled = true;
+                generateBtn.style.opacity = '0.5';
+                generateBtn.style.cursor = 'not-allowed';
+            } else if (percentage > 90) {
+                message += `<strong style="color: #dc3545;">⚠️ ADVERTENCIA CRÍTICA:</strong> Solo te quedan <strong>${remaining.toLocaleString()}</strong> caracteres disponibles (${(100 - percentage).toFixed(1)}% restante).`;
+                usageText.style.color = '#dc3545';
+                usageBar.style.background = 'linear-gradient(90deg, #dc3545, #c82333)';
             } else if (percentage > 70) {
-                usageText.style.color = '#ffc107';
+                message += `<strong style="color: #ffc107;">⚠️ PRECAUCIÓN:</strong> Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres disponibles (${(100 - percentage).toFixed(1)}% restante).`;
+                usageText.style.color = '#856404';
+                usageBar.style.background = 'linear-gradient(90deg, #ffc107, #e0a800)';
             } else {
+                message += `Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres disponibles (${(100 - percentage).toFixed(1)}% restante). 🟢`;
                 usageText.style.color = '#666';
+                usageBar.style.background = 'linear-gradient(90deg, #667eea, #764ba2)';
             }
+            
+            usageText.innerHTML = message;
         }
         
         // Mostrar estado
@@ -506,11 +523,23 @@
             }
             
             const charCount = text.length;
-            const remaining = MONTHLY_LIMIT - getMonthlyUsage();
+            const currentUsage = getMonthlyUsage();
+            const remaining = MONTHLY_LIMIT - currentUsage;
             
+            // PROTECCIÓN ESTRICTA: No permitir si excedería el límite
             if (charCount > remaining) {
-                showStatus(`Este texto tiene ${charCount.toLocaleString()} caracteres, pero solo te quedan ${remaining.toLocaleString()} caracteres disponibles este mes.`, 'error');
+                showStatus(`❌ NO SE PUEDE GENERAR: Este texto tiene ${charCount.toLocaleString()} caracteres, pero solo te quedan ${remaining.toLocaleString()} caracteres disponibles este mes. Tu cuota se renovará el próximo mes.`, 'error');
                 return;
+            }
+            
+            // ADVERTENCIA: Si está cerca del límite (>90%), advertir pero permitir
+            const percentageUsed = ((currentUsage + charCount) / MONTHLY_LIMIT) * 100;
+            if (percentageUsed > 90 && percentageUsed <= 100) {
+                const willRemain = remaining - charCount;
+                if (!confirm(`⚠️ ADVERTENCIA: Después de generar este audio, habrás usado ${percentageUsed.toFixed(1)}% de tu cuota mensual y solo te quedarán ${willRemain.toLocaleString()} caracteres disponibles este mes.\n\n¿Estás seguro de que quieres continuar?`)) {
+                    showStatus('Generación cancelada por el usuario.', 'error');
+                    return;
+                }
             }
             
             // Dividir texto en fragmentos si es necesario
