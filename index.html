@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lector de Textos - Google Neural2</title>
+    <title>Lector de Textos - Google TTS</title>
     <style>
         * {
             margin: 0;
@@ -38,6 +38,68 @@
             color: #666;
             margin-bottom: 30px;
             font-size: 0.95em;
+        }
+        
+        .premium-toggle-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            color: white;
+        }
+        
+        .premium-toggle-section h3 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            left: 33px;
+        }
+        
+        .toggle-label {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .premium-warning {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-top: 10px;
         }
         
         .usage-info {
@@ -338,6 +400,70 @@
             border-color: #667eea;
         }
         
+        .fragmentation-control {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .fragmentation-control h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .frag-options {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .frag-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .frag-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .frag-option label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .frag-manual {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .frag-manual.show {
+            display: block;
+        }
+        
+        .frag-manual input {
+            width: 100px;
+            padding: 8px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .frag-info {
+            margin-top: 15px;
+            padding: 12px;
+            background: #e7f3ff;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #1976D2;
+        }
+        
         .controls {
             display: flex;
             gap: 15px;
@@ -601,7 +727,7 @@
                 padding: 20px;
             }
             
-            .controls {
+            .controls, .frag-options {
                 flex-direction: column;
             }
         }
@@ -610,14 +736,28 @@
 <body>
     <div class="container">
         <h1>🎧 Lector de Textos</h1>
-        <p class="subtitle">Voces Neural2 de Google • 1,000,000 caracteres/mes GRATIS</p>
+        <p class="subtitle">Voces Neural2 (gratis) y Journey/Studio (premium) de Google</p>
+        
+        <!-- Toggle Modo Premium -->
+        <div class="premium-toggle-section">
+            <h3>💎 Modo Premium</h3>
+            <div class="toggle-container">
+                <div class="toggle-switch" id="premiumToggle" onclick="togglePremiumMode()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <div class="toggle-label" id="premiumLabel">Desactivado (Solo voces gratuitas)</div>
+            </div>
+            <div class="premium-warning" id="premiumWarning" style="display: none;">
+                ⚠️ <strong>Voces Journey/Studio se cobran desde el primer carácter</strong> ($16 USD por millón). No tienen tier gratuito.
+            </div>
+        </div>
         
         <!-- Alerta de uso -->
         <div id="usageAlert" class="alert"></div>
         
         <!-- Información de uso -->
         <div class="usage-info" id="usageContainer">
-            <h3>📊 Uso del mes actual</h3>
+            <h3>📊 Uso del mes actual (Neural2)</h3>
             <div class="usage-bar">
                 <div class="usage-fill" id="usageBar"></div>
             </div>
@@ -627,7 +767,7 @@
                     🔍 Verificar en Google Cloud
                 </button>
                 <button class="btn-adjust" onclick="showAdjustModal()">
-                    ⚙️ Ajustar contador manualmente
+                    ⚙️ Ajustar contador
                 </button>
             </div>
         </div>
@@ -666,24 +806,38 @@
             </div>
         </div>
         
+        <!-- Control de fragmentación -->
+        <div class="fragmentation-control">
+            <h4>📋 Fragmentación del texto</h4>
+            <div class="frag-options">
+                <div class="frag-option">
+                    <input type="radio" id="fragAuto" name="fragMode" value="auto" checked onchange="updateFragMode()">
+                    <label for="fragAuto">Automático (30k caracteres)</label>
+                </div>
+                <div class="frag-option">
+                    <input type="radio" id="fragManual" name="fragMode" value="manual" onchange="updateFragMode()">
+                    <label for="fragManual">Manual</label>
+                </div>
+                <div class="frag-option">
+                    <input type="radio" id="fragNone" name="fragMode" value="none" onchange="updateFragMode()">
+                    <label for="fragNone">Sin fragmentar</label>
+                </div>
+            </div>
+            <div class="frag-manual" id="fragManualControl">
+                <label>Número de partes:</label>
+                <input type="number" id="fragPartsInput" min="2" max="20" value="2" oninput="calculateFragmentation()">
+                <span style="margin-left: 10px; color: #666;" id="fragPartSize"></span>
+            </div>
+            <div class="frag-info" id="fragInfo">
+                ℹ️ Textos >30,000 caracteres se fragmentan automáticamente en múltiples MP3.
+            </div>
+        </div>
+        
         <!-- Selector de voz -->
         <div class="voice-selector">
-            <label for="voiceSelect">Selecciona una voz Neural2:</label>
+            <label for="voiceSelect">Selecciona una voz:</label>
             <select id="voiceSelect">
-                <optgroup label="🇪🇸 España">
-                    <option value="es-ES-Neural2-A">España - Femenina A</option>
-                    <option value="es-ES-Neural2-B">España - Masculina B</option>
-                    <option value="es-ES-Neural2-C">España - Femenina C</option>
-                    <option value="es-ES-Neural2-D">España - Femenina D</option>
-                    <option value="es-ES-Neural2-E">España - Femenina E</option>
-                    <option value="es-ES-Neural2-F">España - Masculina F</option>
-                </optgroup>
-                
-                <optgroup label="🇺🇸 US Latino">
-                    <option value="es-US-Neural2-A">US Latino - Femenina A</option>
-                    <option value="es-US-Neural2-B">US Latino - Masculina B</option>
-                    <option value="es-US-Neural2-C">US Latino - Masculina C</option>
-                </optgroup>
+                <!-- Se llena dinámicamente según el modo -->
             </select>
         </div>
         
@@ -717,17 +871,46 @@
 
     <script>
         // CONFIGURACIÓN
-        const MONTHLY_LIMIT = 1000000; // 1 millón gratis
-        const COST_PER_MILLION = 16.00; // $16 USD por millón después
+        const MONTHLY_LIMIT = 1000000; // 1 millón gratis para Neural2
+        const NEURAL2_COST = 16.00; // $16 USD por millón después del límite
+        const PREMIUM_COST = 16.00; // $16 USD por millón desde el primer carácter
         const MAX_CHARS_PER_REQUEST = 2000;
-        const MAX_CHARS_PER_PART = 20000;
+        const DEFAULT_CHARS_PER_PART = 20000;
         const AUTO_SPLIT_THRESHOLD = 30000;
         const MAX_RETRIES = 2;
         
-        // Umbrales de alerta
-        const WARNING_THRESHOLD = 0.70;    // 70%
-        const DANGER_THRESHOLD = 0.85;     // 85%
-        const CRITICAL_THRESHOLD = 0.95;   // 95%
+        // Umbrales
+        const WARNING_THRESHOLD = 0.70;
+        const DANGER_THRESHOLD = 0.85;
+        const CRITICAL_THRESHOLD = 0.95;
+        
+        // Estado
+        let isPremiumMode = false;
+        let fragMode = 'auto'; // auto, manual, none
+        let manualParts = 2;
+        
+        // Voces
+        const NEURAL2_VOICES = [
+            { code: 'es-ES-Neural2-A', name: '🇪🇸 España - Femenina A' },
+            { code: 'es-ES-Neural2-B', name: '🇪🇸 España - Masculina B' },
+            { code: 'es-ES-Neural2-C', name: '🇪🇸 España - Femenina C' },
+            { code: 'es-ES-Neural2-D', name: '🇪🇸 España - Femenina D' },
+            { code: 'es-ES-Neural2-E', name: '🇪🇸 España - Femenina E' },
+            { code: 'es-ES-Neural2-F', name: '🇪🇸 España - Masculina F' },
+            { code: 'es-US-Neural2-A', name: '🇺🇸 US Latino - Femenina A' },
+            { code: 'es-US-Neural2-B', name: '🇺🇸 US Latino - Masculina B' },
+            { code: 'es-US-Neural2-C', name: '🇺🇸 US Latino - Masculina C' }
+        ];
+        
+        const PREMIUM_VOICES = [
+            { code: 'es-ES-Journey-D', name: '💎 España - Journey Femenina D' },
+            { code: 'es-ES-Journey-F', name: '💎 España - Journey Masculina F' },
+            { code: 'es-US-Journey-D', name: '💎 US Latino - Journey Femenina D' },
+            { code: 'es-US-Journey-F', name: '💎 US Latino - Journey Masculina F' },
+            { code: 'es-ES-Studio-C', name: '💎 España - Studio Femenina C' },
+            { code: 'es-ES-Studio-F', name: '💎 España - Studio Masculina F' },
+            { code: 'es-US-Studio-B', name: '💎 US Latino - Studio Masculina B' }
+        ];
         
         // ELEMENTOS DOM
         const textInput = document.getElementById('textInput');
@@ -754,6 +937,13 @@
         const downloadAllBtn = document.getElementById('downloadAllBtn');
         const adjustModal = document.getElementById('adjustModal');
         const adjustInput = document.getElementById('adjustInput');
+        const premiumToggle = document.getElementById('premiumToggle');
+        const premiumLabel = document.getElementById('premiumLabel');
+        const premiumWarning = document.getElementById('premiumWarning');
+        const fragManualControl = document.getElementById('fragManualControl');
+        const fragPartsInput = document.getElementById('fragPartsInput');
+        const fragPartSize = document.getElementById('fragPartSize');
+        const fragInfo = document.getElementById('fragInfo');
         
         let currentAudioBlob = null;
         let generatedParts = [];
@@ -761,31 +951,96 @@
         // INICIALIZACIÓN
         function init() {
             initializeUsage();
+            updateVoiceList();
             updateUsageDisplay();
             updateCharCount();
             checkUsageAlerts();
+            updateFragMode();
             
             textInput.addEventListener('input', () => {
                 updateCharCount();
                 calculateCost();
+                calculateFragmentation();
             });
             fileInput.addEventListener('change', handleFileUpload);
             generateBtn.addEventListener('click', generateAudio);
             clearBtn.addEventListener('click', clearAll);
             downloadBtn.addEventListener('click', downloadAudio);
             downloadAllBtn.addEventListener('click', downloadAllParts);
+            fragPartsInput.addEventListener('input', calculateFragmentation);
+        }
+        
+        // MODO PREMIUM
+        function togglePremiumMode() {
+            isPremiumMode = !isPremiumMode;
+            
+            if (isPremiumMode) {
+                premiumToggle.classList.add('active');
+                premiumLabel.textContent = 'Activado (Voces Journey/Studio)';
+                premiumWarning.style.display = 'block';
+            } else {
+                premiumToggle.classList.remove('active');
+                premiumLabel.textContent = 'Desactivado (Solo voces gratuitas)';
+                premiumWarning.style.display = 'none';
+            }
+            
+            updateVoiceList();
+            calculateCost();
+        }
+        
+        function updateVoiceList() {
+            voiceSelect.innerHTML = '';
+            const voices = isPremiumMode ? PREMIUM_VOICES : NEURAL2_VOICES;
+            
+            voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.code;
+                option.textContent = voice.name;
+                voiceSelect.appendChild(option);
+            });
+        }
+        
+        // FRAGMENTACIÓN
+        function updateFragMode() {
+            const selectedMode = document.querySelector('input[name="fragMode"]:checked').value;
+            fragMode = selectedMode;
+            
+            if (fragMode === 'manual') {
+                fragManualControl.classList.add('show');
+                fragInfo.innerHTML = 'ℹ️ El texto se dividirá en el número de partes que especifiques.';
+                calculateFragmentation();
+            } else if (fragMode === 'auto') {
+                fragManualControl.classList.remove('show');
+                fragInfo.innerHTML = 'ℹ️ Textos >30,000 caracteres se fragmentan automáticamente en múltiples MP3.';
+            } else {
+                fragManualControl.classList.remove('show');
+                fragInfo.innerHTML = 'ℹ️ El texto se procesará en un solo MP3 (puede tardar mucho si es largo).';
+            }
+        }
+        
+        function calculateFragmentation() {
+            if (fragMode !== 'manual') return;
+            
+            const textLength = textInput.value.length;
+            if (textLength === 0) {
+                fragPartSize.textContent = '';
+                return;
+            }
+            
+            const parts = parseInt(fragPartsInput.value) || 2;
+            const charsPerPart = Math.ceil(textLength / parts);
+            fragPartSize.textContent = `≈ ${charsPerPart.toLocaleString()} caracteres por parte`;
         }
         
         // GESTIÓN DE USO
         function initializeUsage() {
             const stored = localStorage.getItem('tts-usage-google-neural2');
             if (!stored) {
-                // Primera vez: inicializar con 100k caracteres
                 const now = new Date();
                 const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
                 localStorage.setItem('tts-usage-google-neural2', JSON.stringify({
                     month: currentMonth,
-                    chars: 100000, // YA USADOS en pruebas
+                    chars: 100000,
                     lastUpdated: now.toISOString()
                 }));
             }
@@ -839,13 +1094,13 @@
             
             if (used >= MONTHLY_LIMIT) {
                 const excess = used - MONTHLY_LIMIT;
-                const excessCost = (excess / 1000000) * COST_PER_MILLION;
+                const excessCost = (excess / 1000000) * NEURAL2_COST;
                 message += `<strong style="color: #dc3545;">⚠️ HAS EXCEDIDO TU LÍMITE GRATIS</strong><br>`;
                 message += `Caracteres de pago: ${excess.toLocaleString()} (~$${excessCost.toFixed(4)} USD)<br>`;
-                message += `<em style="font-size: 0.9em;">Google te cobrará $${COST_PER_MILLION} USD por millón de caracteres adicionales</em>`;
+                message += `<em style="font-size: 0.9em;">Se cobra $${NEURAL2_COST} USD por millón adicional</em>`;
             } else {
                 message += `Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres GRATIS (${(100 - percentage).toFixed(1)}%)<br>`;
-                message += `<em style="font-size: 0.9em;">Se renueva automáticamente el 1 de cada mes</em>`;
+                message += `<em style="font-size: 0.9em;">Se renueva el 1 de cada mes</em>`;
             }
             
             usageText.innerHTML = message;
@@ -859,36 +1114,32 @@
             
             if (percentage >= 1.0) {
                 const excess = used - MONTHLY_LIMIT;
-                const cost = (excess / 1000000) * COST_PER_MILLION;
+                const cost = (excess / 1000000) * NEURAL2_COST;
                 usageAlert.className = 'alert danger show';
                 usageAlert.innerHTML = `
                     <strong>🚨 ESTÁS EN MODO DE PAGO</strong><br>
-                    Has excedido tu cuota gratuita de ${MONTHLY_LIMIT.toLocaleString()} caracteres.<br>
-                    Google está cobrando $${COST_PER_MILLION} USD por millón de caracteres adicionales.<br>
                     Excedente actual: ${excess.toLocaleString()} caracteres ≈ $${cost.toFixed(4)} USD
                 `;
             } else if (percentage >= CRITICAL_THRESHOLD) {
                 usageAlert.className = 'alert danger show';
                 usageAlert.innerHTML = `
                     <strong>⚠️ ALERTA CRÍTICA - ${(percentage * 100).toFixed(1)}% usado</strong><br>
-                    Solo te quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres GRATIS este mes.<br>
-                    Verifica tu uso real en Google Cloud antes de continuar.
+                    Solo quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres GRATIS.
                 `;
             } else if (percentage >= DANGER_THRESHOLD) {
                 usageAlert.className = 'alert warning show';
                 usageAlert.innerHTML = `
-                    <strong>⚠️ ATENCIÓN - ${(percentage * 100).toFixed(1)}% usado</strong><br>
-                    Te estás acercando al límite gratuito. Quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres.
+                    <strong>⚠️ ATENCIÓN - ${(percentage * 100).toFixed(1)}% usado</strong>
                 `;
             } else if (percentage >= WARNING_THRESHOLD) {
                 usageAlert.className = 'alert warning show';
                 usageAlert.innerHTML = `
-                    <strong>💡 Aviso - ${(percentage * 100).toFixed(1)}% de tu cuota mensual usado</strong>
+                    <strong>💡 Aviso - ${(percentage * 100).toFixed(1)}% usado</strong>
                 `;
             }
         }
         
-        // MODAL DE AJUSTE
+        // MODAL
         function showAdjustModal() {
             adjustInput.value = getMonthlyUsage();
             adjustModal.classList.add('show');
@@ -913,7 +1164,7 @@
                 closeAdjustModal();
                 alert(`✅ Contador actualizado a ${newValue.toLocaleString()} caracteres`);
             } else {
-                alert('❌ Por favor ingresa un número válido entre 0 y 10,000,000');
+                alert('❌ Número inválido');
             }
         }
         
@@ -921,7 +1172,7 @@
             window.open('https://console.cloud.google.com/apis/api/texttospeech.googleapis.com/metrics', '_blank');
         }
         
-        // CALCULADORA DE COSTO
+        // CALCULADORA
         function calculateCost() {
             const textLength = textInput.value.length;
             if (textLength === 0) {
@@ -929,49 +1180,69 @@
                 return;
             }
             
-            const currentUsage = getMonthlyUsage();
-            const remaining = Math.max(0, MONTHLY_LIMIT - currentUsage);
-            
             let html = '';
             
-            if (textLength <= remaining) {
+            if (isPremiumMode) {
+                // Voces premium: TODO se cobra
+                const cost = (textLength / 1000000) * PREMIUM_COST;
                 html = `
                     <div class="cost-row">
                         <span>Texto:</span>
                         <span>${textLength.toLocaleString()} caracteres</span>
                     </div>
                     <div class="cost-row">
-                        <span>Dentro del límite gratis:</span>
-                        <span class="cost-free">✅ SÍ (quedan ${remaining.toLocaleString()})</span>
-                    </div>
-                    <div class="cost-row">
-                        <span>COSTO:</span>
-                        <span class="cost-free">$0.00 USD (GRATIS)</span>
-                    </div>
-                `;
-            } else {
-                const freeChars = remaining;
-                const paidChars = textLength - remaining;
-                const paidCost = (paidChars / 1000000) * COST_PER_MILLION;
-                
-                html = `
-                    <div class="cost-row">
-                        <span>Texto total:</span>
-                        <span>${textLength.toLocaleString()} caracteres</span>
-                    </div>
-                    <div class="cost-row">
-                        <span>Parte GRATIS:</span>
-                        <span class="cost-free">${freeChars.toLocaleString()} caracteres</span>
-                    </div>
-                    <div class="cost-row">
-                        <span>Parte DE PAGO:</span>
-                        <span class="cost-paid">${paidChars.toLocaleString()} caracteres</span>
+                        <span>Voz premium (Journey/Studio):</span>
+                        <span class="cost-paid">SIN tier gratuito</span>
                     </div>
                     <div class="cost-row">
                         <span>COSTO TOTAL:</span>
-                        <span class="cost-paid">$${paidCost.toFixed(4)} USD</span>
+                        <span class="cost-paid">$${cost.toFixed(4)} USD</span>
                     </div>
                 `;
+            } else {
+                // Voces Neural2: tier gratuito
+                const currentUsage = getMonthlyUsage();
+                const remaining = Math.max(0, MONTHLY_LIMIT - currentUsage);
+                
+                if (textLength <= remaining) {
+                    html = `
+                        <div class="cost-row">
+                            <span>Texto:</span>
+                            <span>${textLength.toLocaleString()} caracteres</span>
+                        </div>
+                        <div class="cost-row">
+                            <span>Dentro del límite gratis:</span>
+                            <span class="cost-free">✅ SÍ (quedan ${remaining.toLocaleString()})</span>
+                        </div>
+                        <div class="cost-row">
+                            <span>COSTO:</span>
+                            <span class="cost-free">$0.00 USD (GRATIS)</span>
+                        </div>
+                    `;
+                } else {
+                    const freeChars = remaining;
+                    const paidChars = textLength - remaining;
+                    const paidCost = (paidChars / 1000000) * NEURAL2_COST;
+                    
+                    html = `
+                        <div class="cost-row">
+                            <span>Texto total:</span>
+                            <span>${textLength.toLocaleString()} caracteres</span>
+                        </div>
+                        <div class="cost-row">
+                            <span>Parte GRATIS:</span>
+                            <span class="cost-free">${freeChars.toLocaleString()} caracteres</span>
+                        </div>
+                        <div class="cost-row">
+                            <span>Parte DE PAGO:</span>
+                            <span class="cost-paid">${paidChars.toLocaleString()} caracteres</span>
+                        </div>
+                        <div class="cost-row">
+                            <span>COSTO TOTAL:</span>
+                            <span class="cost-paid">$${paidCost.toFixed(4)} USD</span>
+                        </div>
+                    `;
+                }
             }
             
             costBreakdown.innerHTML = html;
@@ -993,6 +1264,7 @@
                 textInput.value = e.target.result;
                 updateCharCount();
                 calculateCost();
+                calculateFragmentation();
             };
             reader.readAsText(file);
         }
@@ -1034,7 +1306,7 @@
             URL.revokeObjectURL(url);
         }
         
-        // FUNCIONES MULTI-PARTE
+        // MULTI-PARTE
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
@@ -1087,13 +1359,14 @@
             return chunks;
         }
         
-        function splitTextIntoParts(text, maxCharsPerPart) {
+        function splitTextIntoParts(text, numParts) {
+            const charsPerPart = Math.ceil(text.length / numParts);
             const parts = [];
             const paragraphs = text.split(/\n\n+/);
             let currentPart = '';
             
             for (const paragraph of paragraphs) {
-                if ((currentPart + '\n\n' + paragraph).length > maxCharsPerPart && currentPart) {
+                if ((currentPart + '\n\n' + paragraph).length > charsPerPart && currentPart && parts.length < numParts - 1) {
                     parts.push(currentPart.trim());
                     currentPart = paragraph;
                 } else {
@@ -1221,7 +1494,7 @@
                 const audioContent = await processChunkWithRetry(chunks[i], voiceName, i, chunks.length);
                 audioChunks.push(audioContent);
                 
-                if (i < chunks.length - 1) await sleep(1000);
+                if (i < chunks.length - 1) await sleep(1500); // Más tiempo entre fragmentos para voces premium
             }
             
             const blobs = audioChunks.map(base64 => {
@@ -1236,7 +1509,7 @@
             return new Blob(blobs, { type: 'audio/mp3' });
         }
         
-        // GENERACIÓN DE AUDIO
+        // GENERACIÓN
         async function generateAudio() {
             const text = textInput.value.trim();
             
@@ -1246,52 +1519,68 @@
             }
             
             const charCount = text.length;
-            const currentUsage = getMonthlyUsage();
-            const remaining = Math.max(0, MONTHLY_LIMIT - currentUsage);
             
-            // Confirmar si excede límite
-            if (charCount > remaining) {
-                const freeChars = remaining;
-                const paidChars = charCount - remaining;
-                const paidCost = (paidChars / 1000000) * COST_PER_MILLION;
-                
+            // Confirmaciones según modo
+            if (isPremiumMode) {
+                const cost = (charCount / 1000000) * PREMIUM_COST;
                 if (!confirm(
-                    `⚠️ ADVERTENCIA: ESTO TENDRÁ COSTO\n\n` +
-                    `Tu texto: ${charCount.toLocaleString()} caracteres\n` +
-                    `Parte gratis: ${freeChars.toLocaleString()} caracteres\n` +
-                    `Parte DE PAGO: ${paidChars.toLocaleString()} caracteres\n\n` +
-                    `💰 COSTO: $${paidCost.toFixed(4)} USD\n\n` +
+                    `💎 VOCES PREMIUM (Journey/Studio)\n\n` +
+                    `Texto: ${charCount.toLocaleString()} caracteres\n` +
+                    `💰 COSTO: $${cost.toFixed(4)} USD\n\n` +
+                    `Las voces premium se cobran desde el primer carácter.\n` +
                     `Google te cobrará este monto a fin de mes.\n\n` +
-                    `¿Deseas continuar?`
-                )) {
-                    showStatus('Generación cancelada.', 'error');
-                    return;
-                }
-            } else if (currentUsage > MONTHLY_LIMIT * WARNING_THRESHOLD) {
-                const percentageAfter = ((currentUsage + charCount) / MONTHLY_LIMIT) * 100;
-                if (!confirm(
-                    `💡 AVISO\n\n` +
-                    `Después de generar habrás usado el ${percentageAfter.toFixed(1)}% de tu cuota gratuita.\n\n` +
                     `¿Continuar?`
                 )) {
                     showStatus('Generación cancelada.', 'error');
                     return;
                 }
+            } else {
+                // Neural2: verificar límite gratuito
+                const currentUsage = getMonthlyUsage();
+                const remaining = Math.max(0, MONTHLY_LIMIT - currentUsage);
+                
+                if (charCount > remaining) {
+                    const freeChars = remaining;
+                    const paidChars = charCount - remaining;
+                    const paidCost = (paidChars / 1000000) * NEURAL2_COST;
+                    
+                    if (!confirm(
+                        `⚠️ EXCEDERÁS TU LÍMITE GRATUITO\n\n` +
+                        `Texto: ${charCount.toLocaleString()} caracteres\n` +
+                        `Parte gratis: ${freeChars.toLocaleString()} caracteres\n` +
+                        `Parte DE PAGO: ${paidChars.toLocaleString()} caracteres\n\n` +
+                        `💰 COSTO: $${paidCost.toFixed(4)} USD\n\n` +
+                        `¿Continuar?`
+                    )) {
+                        showStatus('Generación cancelada.', 'error');
+                        return;
+                    }
+                }
             }
             
-            if (charCount > AUTO_SPLIT_THRESHOLD) {
-                return await generateMultiPartAudio(text);
-            } else {
+            // Decidir fragmentación
+            if (fragMode === 'none') {
                 return await generateSingleAudio(text, charCount);
+            } else if (fragMode === 'manual') {
+                const parts = parseInt(fragPartsInput.value) || 2;
+                return await generateMultiPartAudio(text, parts);
+            } else {
+                // Auto
+                if (charCount > AUTO_SPLIT_THRESHOLD) {
+                    const autoParts = Math.ceil(charCount / DEFAULT_CHARS_PER_PART);
+                    return await generateMultiPartAudio(text, autoParts);
+                } else {
+                    return await generateSingleAudio(text, charCount);
+                }
             }
         }
         
-        async function generateMultiPartAudio(text) {
+        async function generateMultiPartAudio(text, numParts) {
             generateBtn.disabled = true;
             audioPlayer.classList.remove('show');
             multiPartContainer.classList.add('show');
             
-            const parts = splitTextIntoParts(text, MAX_CHARS_PER_PART);
+            const parts = splitTextIntoParts(text, numParts);
             const totalParts = parts.length;
             
             partsContainer.innerHTML = '';
@@ -1300,7 +1589,7 @@
             splitInfo.innerHTML = `
                 <h4>📊 Dividido en ${totalParts} partes</h4>
                 <p>Total: ${text.length.toLocaleString()} caracteres</p>
-                <p>⏱️ Tiempo estimado: ${totalParts}-${totalParts + 2} minutos</p>
+                <p>⏱️ Tiempo estimado: ${totalParts * 1.5}-${totalParts * 2.5} minutos</p>
             `;
             
             parts.forEach((partText, index) => {
@@ -1330,7 +1619,7 @@
                     successCount++;
                     progressFill.style.width = `${((successCount / totalParts) * 100).toFixed(0)}%`;
                     
-                    if (partIndex < totalParts - 1) await sleep(1000);
+                    if (partIndex < totalParts - 1) await sleep(2000);
                     
                 } catch (error) {
                     console.error(`Error parte ${partIndex + 1}:`, error);
@@ -1352,7 +1641,8 @@
                 downloadAllBtn.style.display = 'block';
             }
             
-            if (successCount > 0) {
+            // Guardar uso solo si son voces Neural2
+            if (!isPremiumMode && successCount > 0) {
                 const totalChars = generatedParts
                     .filter(p => p.status === 'completed')
                     .reduce((sum, p) => sum + p.text.length, 0);
@@ -1378,7 +1668,7 @@
                     const audioContent = await processChunkWithRetry(chunks[i], voiceSelect.value, i, chunks.length);
                     audioChunks.push(audioContent);
                     
-                    if (i < chunks.length - 1) await sleep(1000);
+                    if (i < chunks.length - 1) await sleep(1500);
                 }
                 
                 showStatus('Finalizando...', 'loading');
@@ -1400,15 +1690,23 @@
                 progressBar.classList.remove('show');
                 progressFill.style.width = '100%';
                 
-                saveMonthlyUsage(charCount);
+                // Guardar uso solo si son voces Neural2
+                if (!isPremiumMode) {
+                    saveMonthlyUsage(charCount);
+                }
                 
-                const currentUsage = getMonthlyUsage();
-                if (currentUsage > MONTHLY_LIMIT) {
-                    const excess = currentUsage - MONTHLY_LIMIT;
-                    const cost = (excess / 1000000) * COST_PER_MILLION;
+                if (isPremiumMode) {
+                    const cost = (charCount / 1000000) * PREMIUM_COST;
                     showStatus(`✅ Generado! (Costo: $${cost.toFixed(4)} USD)`, 'success');
                 } else {
-                    showStatus('✅ ¡Generado! (Gratis)', 'success');
+                    const currentUsage = getMonthlyUsage();
+                    if (currentUsage > MONTHLY_LIMIT) {
+                        const excess = currentUsage - MONTHLY_LIMIT;
+                        const cost = (excess / 1000000) * NEURAL2_COST;
+                        showStatus(`✅ Generado! (Costo: $${cost.toFixed(4)} USD)`, 'success');
+                    } else {
+                        showStatus('✅ ¡Generado! (Gratis)', 'success');
+                    }
                 }
                 
             } catch (error) {
