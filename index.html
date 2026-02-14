@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lector de Textos - Azure TTS</title>
+    <title>Lector de Textos - Google Neural2</title>
     <style>
         * {
             margin: 0;
@@ -41,37 +41,88 @@
         }
         
         .usage-info {
-            background: #e7f3ff;
-            border-left: 4px solid #0078d4;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
             padding: 15px;
             margin-bottom: 25px;
             border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .usage-info.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        
+        .usage-info.danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
         }
         
         .usage-info h3 {
-            color: #0078d4;
+            color: #667eea;
             margin-bottom: 10px;
             font-size: 1.1em;
         }
         
+        .usage-info.warning h3 {
+            color: #856404;
+        }
+        
+        .usage-info.danger h3 {
+            color: #721c24;
+        }
+        
         .usage-bar {
             background: #e9ecef;
-            height: 8px;
-            border-radius: 4px;
+            height: 10px;
+            border-radius: 5px;
             overflow: hidden;
             margin: 10px 0;
         }
         
         .usage-fill {
-            background: linear-gradient(90deg, #0078d4, #005a9e);
+            background: linear-gradient(90deg, #667eea, #764ba2);
             height: 100%;
-            transition: width 0.3s ease;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+        
+        .usage-fill.warning {
+            background: linear-gradient(90deg, #ffc107, #ff9800);
+        }
+        
+        .usage-fill.danger {
+            background: linear-gradient(90deg, #dc3545, #c82333);
         }
         
         .usage-text {
             font-size: 0.9em;
             color: #666;
             margin-top: 5px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        .alert.warning {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffc107;
+        }
+        
+        .alert.danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #dc3545;
         }
         
         .input-section {
@@ -269,7 +320,6 @@
             background: #218838;
         }
         
-        /* Estilos multi-parte */
         .multi-part-container {
             display: none;
             margin-top: 20px;
@@ -425,18 +475,21 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎧 Lector de Textos con Azure</h1>
-        <p class="subtitle">Convierte tus textos a audio MP3 con voces neurales de alta calidad • 500,000 caracteres/mes GRATIS</p>
+        <h1>🎧 Lector de Textos</h1>
+        <p class="subtitle">Voces Neural2 de Google • 1,000,000 caracteres/mes GRATIS • Sistema multi-parte automático</p>
+        
+        <!-- Alerta de uso -->
+        <div id="usageAlert" class="alert"></div>
         
         <!-- Información de uso -->
-        <div class="usage-info">
-            <h3>📊 Uso del mes actual (Azure Cognitive Services - Gratis)</h3>
+        <div class="usage-info" id="usageContainer">
+            <h3>📊 Uso del mes actual (Google Neural2 - Gratis)</h3>
             <div class="usage-bar">
                 <div class="usage-fill" id="usageBar"></div>
             </div>
             <div class="usage-text" id="usageText">Cargando...</div>
             <div style="margin-top: 10px; font-size: 0.85em; color: #888;">
-                💡 <strong>500,000 caracteres/mes gratis</strong> con voces neurales premium. Textos mayores a 30,000 caracteres se dividen automáticamente en múltiples archivos MP3.
+                💡 <strong>1,000,000 caracteres/mes gratis.</strong> La cuota se renueva automáticamente cada 1 de mes. Textos mayores a 30,000 caracteres se dividen automáticamente.
             </div>
         </div>
         
@@ -454,34 +507,21 @@
         
         <!-- Selector de voz -->
         <div class="voice-selector">
-            <label for="voiceSelect">Selecciona una voz:</label>
+            <label for="voiceSelect">Selecciona una voz Neural2 (gratuita):</label>
             <select id="voiceSelect">
-                <optgroup label="🇪🇸 España - Voces Neurales">
-                    <option value="es-ES-ElviraNeural">Elvira - Femenina (España)</option>
-                    <option value="es-ES-AlvaroNeural">Álvaro - Masculina (España)</option>
-                    <option value="es-ES-AbrilNeural">Abril - Femenina (España)</option>
-                    <option value="es-ES-ArnauNeural">Arnau - Masculina (España)</option>
+                <optgroup label="🇪🇸 España - Voces Neural2">
+                    <option value="es-ES-Neural2-A">España - Femenina A</option>
+                    <option value="es-ES-Neural2-B">España - Masculina B</option>
+                    <option value="es-ES-Neural2-C">España - Femenina C</option>
+                    <option value="es-ES-Neural2-D">España - Femenina D</option>
+                    <option value="es-ES-Neural2-E">España - Femenina E</option>
+                    <option value="es-ES-Neural2-F">España - Masculina F</option>
                 </optgroup>
                 
-                <optgroup label="🇲🇽 México - Voces Neurales">
-                    <option value="es-MX-DaliaNeural">Dalia - Femenina (México)</option>
-                    <option value="es-MX-JorgeNeural">Jorge - Masculina (México)</option>
-                    <option value="es-MX-BeatrizNeural">Beatriz - Femenina (México)</option>
-                </optgroup>
-                
-                <optgroup label="🇦🇷 Argentina - Voces Neurales">
-                    <option value="es-AR-ElenaNeural">Elena - Femenina (Argentina)</option>
-                    <option value="es-AR-TomasNeural">Tomás - Masculina (Argentina)</option>
-                </optgroup>
-                
-                <optgroup label="🇨🇴 Colombia - Voces Neurales">
-                    <option value="es-CO-SalomeNeural">Salomé - Femenina (Colombia)</option>
-                    <option value="es-CO-GonzaloNeural">Gonzalo - Masculina (Colombia)</option>
-                </optgroup>
-                
-                <optgroup label="🇵🇪 Perú - Voces Neurales">
-                    <option value="es-PE-CamilaNeural">Camila - Femenina (Perú)</option>
-                    <option value="es-PE-AlexNeural">Alex - Masculina (Perú)</option>
+                <optgroup label="🇺🇸 US Latino - Voces Neural2">
+                    <option value="es-US-Neural2-A">US Latino - Femenina A</option>
+                    <option value="es-US-Neural2-B">US Latino - Masculina B</option>
+                    <option value="es-US-Neural2-C">US Latino - Masculina C</option>
                 </optgroup>
             </select>
         </div>
@@ -516,11 +556,16 @@
 
     <script>
         // CONFIGURACIÓN
-        const MONTHLY_LIMIT = 500000; // Azure tier gratuito
-        const MAX_CHARS_PER_REQUEST = 2000; // Fragmentos para Azure
-        const MAX_CHARS_PER_PART = 20000; // Tamaño por MP3
+        const MONTHLY_LIMIT = 1000000; // Google Neural2 tier gratuito
+        const MAX_CHARS_PER_REQUEST = 2000; // Tamaño de fragmentos
+        const MAX_CHARS_PER_PART = 20000; // Tamaño de cada MP3
         const AUTO_SPLIT_THRESHOLD = 30000; // División automática
         const MAX_RETRIES = 2;
+        
+        // Umbrales de alerta
+        const WARNING_THRESHOLD = 0.80; // 80%
+        const DANGER_THRESHOLD = 0.90;  // 90%
+        const CRITICAL_THRESHOLD = 0.95; // 95%
         
         // ELEMENTOS DOM
         const textInput = document.getElementById('textInput');
@@ -537,6 +582,8 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const usageBar = document.getElementById('usageBar');
         const usageText = document.getElementById('usageText');
+        const usageContainer = document.getElementById('usageContainer');
+        const usageAlert = document.getElementById('usageAlert');
         const multiPartContainer = document.getElementById('multiPartContainer');
         const splitInfo = document.getElementById('splitInfo');
         const partsContainer = document.getElementById('partsContainer');
@@ -549,6 +596,7 @@
         function init() {
             updateUsageDisplay();
             updateCharCount();
+            checkUsageAlerts();
             
             textInput.addEventListener('input', updateCharCount);
             fileInput.addEventListener('change', handleFileUpload);
@@ -562,7 +610,7 @@
         function getMonthlyUsage() {
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
-            const stored = localStorage.getItem('tts-usage-azure');
+            const stored = localStorage.getItem('tts-usage-google-neural2');
             
             if (stored) {
                 const data = JSON.parse(stored);
@@ -576,11 +624,13 @@
             const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
             const currentUsage = getMonthlyUsage();
             
-            localStorage.setItem('tts-usage-azure', JSON.stringify({
+            localStorage.setItem('tts-usage-google-neural2', JSON.stringify({
                 month: currentMonth,
-                chars: currentUsage + charsUsed
+                chars: currentUsage + charsUsed,
+                lastUpdated: now.toISOString()
             }));
             updateUsageDisplay();
+            checkUsageAlerts();
         }
         
         function updateUsageDisplay() {
@@ -590,23 +640,69 @@
             
             usageBar.style.width = `${Math.min(percentage, 100)}%`;
             
+            // Cambiar colores según uso
+            usageBar.classList.remove('warning', 'danger');
+            usageContainer.classList.remove('warning', 'danger');
+            
+            if (percentage >= CRITICAL_THRESHOLD * 100) {
+                usageBar.classList.add('danger');
+                usageContainer.classList.add('danger');
+            } else if (percentage >= WARNING_THRESHOLD * 100) {
+                usageBar.classList.add('warning');
+                usageContainer.classList.add('warning');
+            }
+            
             let message = `Has usado <strong>${used.toLocaleString()}</strong> de <strong>${MONTHLY_LIMIT.toLocaleString()}</strong> caracteres este mes.<br>`;
             
             if (percentage >= 100) {
-                message += `<strong style="color: #dc3545;">⛔ LÍMITE ALCANZADO</strong>`;
-                usageBar.style.background = '#dc3545';
-            } else if (percentage > 90) {
-                message += `<strong style="color: #dc3545;">⚠️ Quedan ${remaining.toLocaleString()} caracteres.</strong>`;
-                usageBar.style.background = '#dc3545';
-            } else if (percentage > 70) {
-                message += `<strong style="color: #ffc107;">⚠️ Quedan ${remaining.toLocaleString()} caracteres.</strong>`;
-                usageBar.style.background = '#ffc107';
+                message += `<strong style="color: #dc3545;">⛔ LÍMITE ALCANZADO - Ya no es gratis este mes.</strong>`;
+                generateBtn.disabled = true;
             } else {
-                message += `Te quedan ${remaining.toLocaleString()} caracteres. 🟢`;
-                usageBar.style.background = 'linear-gradient(90deg, #0078d4, #005a9e)';
+                message += `Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres gratis (${(100 - percentage).toFixed(1)}%).`;
             }
             
             usageText.innerHTML = message;
+        }
+        
+        function checkUsageAlerts() {
+            const used = getMonthlyUsage();
+            const percentage = used / MONTHLY_LIMIT;
+            
+            usageAlert.classList.remove('show', 'warning', 'danger');
+            
+            if (percentage >= 1.0) {
+                usageAlert.className = 'alert danger show';
+                usageAlert.innerHTML = `
+                    <strong>🚨 LÍMITE EXCEDIDO</strong><br>
+                    Has usado ${used.toLocaleString()} caracteres este mes. A partir de ahora Google comenzará a cobrar por cada carácter adicional.<br>
+                    <strong>Tu cuota se renovará automáticamente el 1 de ${getNextMonthName()}.</strong>
+                `;
+            } else if (percentage >= CRITICAL_THRESHOLD) {
+                usageAlert.className = 'alert danger show';
+                usageAlert.innerHTML = `
+                    <strong>⚠️ ALERTA CRÍTICA</strong><br>
+                    Has usado el ${(percentage * 100).toFixed(1)}% de tu cuota gratuita. Solo te quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres gratis este mes.
+                `;
+            } else if (percentage >= DANGER_THRESHOLD) {
+                usageAlert.className = 'alert warning show';
+                usageAlert.innerHTML = `
+                    <strong>⚠️ ATENCIÓN</strong><br>
+                    Has usado el ${(percentage * 100).toFixed(1)}% de tu cuota gratuita. Te quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres este mes.
+                `;
+            } else if (percentage >= WARNING_THRESHOLD) {
+                usageAlert.className = 'alert warning show';
+                usageAlert.innerHTML = `
+                    <strong>💡 Aviso</strong><br>
+                    Has usado el ${(percentage * 100).toFixed(1)}% de tu cuota gratuita.
+                `;
+            }
+        }
+        
+        function getNextMonthName() {
+            const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
+                          'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            const nextMonth = (new Date().getMonth() + 1) % 12;
+            return months[nextMonth];
         }
         
         // INTERFAZ
@@ -878,9 +974,33 @@
             const currentUsage = getMonthlyUsage();
             const remaining = MONTHLY_LIMIT - currentUsage;
             
+            // Verificar límite
             if (charCount > remaining) {
-                showStatus(`❌ Solo quedan ${remaining.toLocaleString()} caracteres este mes.`, 'error');
-                return;
+                const willExceed = charCount - remaining;
+                if (!confirm(
+                    `⚠️ ADVERTENCIA DE COSTO\n\n` +
+                    `Tu texto tiene ${charCount.toLocaleString()} caracteres.\n` +
+                    `Solo te quedan ${remaining.toLocaleString()} caracteres gratis.\n\n` +
+                    `Si continúas, excederás tu cuota gratuita por ${willExceed.toLocaleString()} caracteres.\n` +
+                    `Google comenzará a cobrar por el excedente.\n\n` +
+                    `¿Deseas continuar de todas formas?`
+                )) {
+                    showStatus('Generación cancelada.', 'error');
+                    return;
+                }
+            }
+            
+            // Advertencia si se acerca al límite
+            if (currentUsage + charCount > MONTHLY_LIMIT * WARNING_THRESHOLD && currentUsage < MONTHLY_LIMIT) {
+                const percentageAfter = ((currentUsage + charCount) / MONTHLY_LIMIT) * 100;
+                if (!confirm(
+                    `⚠️ AVISO\n\n` +
+                    `Después de generar este audio habrás usado el ${percentageAfter.toFixed(1)}% de tu cuota mensual gratuita.\n\n` +
+                    `¿Continuar?`
+                )) {
+                    showStatus('Generación cancelada.', 'error');
+                    return;
+                }
             }
             
             if (charCount > AUTO_SPLIT_THRESHOLD) {
@@ -966,15 +1086,6 @@
         }
         
         async function generateSingleAudio(text, charCount) {
-            const currentUsage = getMonthlyUsage();
-            
-            if (((currentUsage + charCount) / MONTHLY_LIMIT) > 0.9) {
-                if (!confirm(`⚠️ Usarás ${((currentUsage + charCount) / MONTHLY_LIMIT * 100).toFixed(1)}%. ¿Continuar?`)) {
-                    showStatus('Cancelado.', 'error');
-                    return;
-                }
-            }
-            
             try {
                 generateBtn.disabled = true;
                 multiPartContainer.classList.remove('show');
