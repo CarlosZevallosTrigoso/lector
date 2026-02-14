@@ -42,8 +42,8 @@
         
         .usage-info {
             background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 15px;
+            border-left: 4px solid #28a745;
+            padding: 20px;
             margin-bottom: 25px;
             border-radius: 5px;
             transition: all 0.3s;
@@ -60,9 +60,9 @@
         }
         
         .usage-info h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 1.1em;
+            color: #28a745;
+            margin-bottom: 15px;
+            font-size: 1.2em;
         }
         
         .usage-info.warning h3 {
@@ -75,14 +75,14 @@
         
         .usage-bar {
             background: #e9ecef;
-            height: 10px;
-            border-radius: 5px;
+            height: 12px;
+            border-radius: 6px;
             overflow: hidden;
-            margin: 10px 0;
+            margin: 15px 0;
         }
         
         .usage-fill {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #28a745, #20c997);
             height: 100%;
             transition: width 0.3s ease, background 0.3s ease;
         }
@@ -96,9 +96,143 @@
         }
         
         .usage-text {
+            font-size: 1em;
+            color: #333;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        
+        .usage-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .usage-actions button {
+            padding: 10px 20px;
             font-size: 0.9em;
-            color: #666;
-            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn-verify {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-verify:hover {
+            background: #138496;
+        }
+        
+        .btn-adjust {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-adjust:hover {
+            background: #5a6268;
+        }
+        
+        .adjust-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .adjust-modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .modal-content h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 1em;
+            margin: 10px 0;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .cost-calculator {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: none;
+        }
+        
+        .cost-calculator.show {
+            display: block;
+        }
+        
+        .cost-calculator h4 {
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+        
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #90caf9;
+        }
+        
+        .cost-row:last-child {
+            border-bottom: none;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #2196F3;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        
+        .cost-free {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .cost-paid {
+            color: #dc3545;
+            font-weight: 600;
         }
         
         .alert {
@@ -476,21 +610,48 @@
 <body>
     <div class="container">
         <h1>🎧 Lector de Textos</h1>
-        <p class="subtitle">Voces Neural2 de Google • 1,000,000 caracteres/mes GRATIS • Sistema multi-parte automático</p>
+        <p class="subtitle">Voces Neural2 de Google • 1,000,000 caracteres/mes GRATIS</p>
         
         <!-- Alerta de uso -->
         <div id="usageAlert" class="alert"></div>
         
         <!-- Información de uso -->
         <div class="usage-info" id="usageContainer">
-            <h3>📊 Uso del mes actual (Google Neural2 - Gratis)</h3>
+            <h3>📊 Uso del mes actual</h3>
             <div class="usage-bar">
                 <div class="usage-fill" id="usageBar"></div>
             </div>
             <div class="usage-text" id="usageText">Cargando...</div>
-            <div style="margin-top: 10px; font-size: 0.85em; color: #888;">
-                💡 <strong>1,000,000 caracteres/mes gratis.</strong> La cuota se renueva automáticamente cada 1 de mes. Textos mayores a 30,000 caracteres se dividen automáticamente.
+            <div class="usage-actions">
+                <button class="btn-verify" onclick="openGoogleCloudMetrics()">
+                    🔍 Verificar en Google Cloud
+                </button>
+                <button class="btn-adjust" onclick="showAdjustModal()">
+                    ⚙️ Ajustar contador manualmente
+                </button>
             </div>
+        </div>
+        
+        <!-- Modal de ajuste -->
+        <div class="adjust-modal" id="adjustModal">
+            <div class="modal-content">
+                <h3>⚙️ Ajustar contador de uso</h3>
+                <p style="margin-bottom: 15px; color: #666;">
+                    Si verificaste en Google Cloud y ves un número diferente, ajústalo aquí.
+                </p>
+                <label>Caracteres usados este mes:</label>
+                <input type="number" id="adjustInput" min="0" max="10000000" value="0">
+                <div class="modal-actions">
+                    <button class="btn-primary" onclick="saveAdjustment()">Guardar</button>
+                    <button class="btn-secondary" onclick="closeAdjustModal()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calculadora de costo -->
+        <div class="cost-calculator" id="costCalculator">
+            <h4>💰 Costo de este texto</h4>
+            <div id="costBreakdown"></div>
         </div>
         
         <!-- Área de texto -->
@@ -507,9 +668,9 @@
         
         <!-- Selector de voz -->
         <div class="voice-selector">
-            <label for="voiceSelect">Selecciona una voz Neural2 (gratuita):</label>
+            <label for="voiceSelect">Selecciona una voz Neural2:</label>
             <select id="voiceSelect">
-                <optgroup label="🇪🇸 España - Voces Neural2">
+                <optgroup label="🇪🇸 España">
                     <option value="es-ES-Neural2-A">España - Femenina A</option>
                     <option value="es-ES-Neural2-B">España - Masculina B</option>
                     <option value="es-ES-Neural2-C">España - Femenina C</option>
@@ -518,7 +679,7 @@
                     <option value="es-ES-Neural2-F">España - Masculina F</option>
                 </optgroup>
                 
-                <optgroup label="🇺🇸 US Latino - Voces Neural2">
+                <optgroup label="🇺🇸 US Latino">
                     <option value="es-US-Neural2-A">US Latino - Femenina A</option>
                     <option value="es-US-Neural2-B">US Latino - Masculina B</option>
                     <option value="es-US-Neural2-C">US Latino - Masculina C</option>
@@ -556,16 +717,17 @@
 
     <script>
         // CONFIGURACIÓN
-        const MONTHLY_LIMIT = 1000000; // Google Neural2 tier gratuito
-        const MAX_CHARS_PER_REQUEST = 2000; // Tamaño de fragmentos
-        const MAX_CHARS_PER_PART = 20000; // Tamaño de cada MP3
-        const AUTO_SPLIT_THRESHOLD = 30000; // División automática
+        const MONTHLY_LIMIT = 1000000; // 1 millón gratis
+        const COST_PER_MILLION = 16.00; // $16 USD por millón después
+        const MAX_CHARS_PER_REQUEST = 2000;
+        const MAX_CHARS_PER_PART = 20000;
+        const AUTO_SPLIT_THRESHOLD = 30000;
         const MAX_RETRIES = 2;
         
         // Umbrales de alerta
-        const WARNING_THRESHOLD = 0.80; // 80%
-        const DANGER_THRESHOLD = 0.90;  // 90%
-        const CRITICAL_THRESHOLD = 0.95; // 95%
+        const WARNING_THRESHOLD = 0.70;    // 70%
+        const DANGER_THRESHOLD = 0.85;     // 85%
+        const CRITICAL_THRESHOLD = 0.95;   // 95%
         
         // ELEMENTOS DOM
         const textInput = document.getElementById('textInput');
@@ -584,21 +746,29 @@
         const usageText = document.getElementById('usageText');
         const usageContainer = document.getElementById('usageContainer');
         const usageAlert = document.getElementById('usageAlert');
+        const costCalculator = document.getElementById('costCalculator');
+        const costBreakdown = document.getElementById('costBreakdown');
         const multiPartContainer = document.getElementById('multiPartContainer');
         const splitInfo = document.getElementById('splitInfo');
         const partsContainer = document.getElementById('partsContainer');
         const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const adjustModal = document.getElementById('adjustModal');
+        const adjustInput = document.getElementById('adjustInput');
         
         let currentAudioBlob = null;
         let generatedParts = [];
         
         // INICIALIZACIÓN
         function init() {
+            initializeUsage();
             updateUsageDisplay();
             updateCharCount();
             checkUsageAlerts();
             
-            textInput.addEventListener('input', updateCharCount);
+            textInput.addEventListener('input', () => {
+                updateCharCount();
+                calculateCost();
+            });
             fileInput.addEventListener('change', handleFileUpload);
             generateBtn.addEventListener('click', generateAudio);
             clearBtn.addEventListener('click', clearAll);
@@ -607,6 +777,20 @@
         }
         
         // GESTIÓN DE USO
+        function initializeUsage() {
+            const stored = localStorage.getItem('tts-usage-google-neural2');
+            if (!stored) {
+                // Primera vez: inicializar con 100k caracteres
+                const now = new Date();
+                const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
+                localStorage.setItem('tts-usage-google-neural2', JSON.stringify({
+                    month: currentMonth,
+                    chars: 100000, // YA USADOS en pruebas
+                    lastUpdated: now.toISOString()
+                }));
+            }
+        }
+        
         function getMonthlyUsage() {
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
@@ -640,7 +824,6 @@
             
             usageBar.style.width = `${Math.min(percentage, 100)}%`;
             
-            // Cambiar colores según uso
             usageBar.classList.remove('warning', 'danger');
             usageContainer.classList.remove('warning', 'danger');
             
@@ -652,13 +835,17 @@
                 usageContainer.classList.add('warning');
             }
             
-            let message = `Has usado <strong>${used.toLocaleString()}</strong> de <strong>${MONTHLY_LIMIT.toLocaleString()}</strong> caracteres este mes.<br>`;
+            let message = `<strong style="font-size: 1.1em;">${used.toLocaleString()} / ${MONTHLY_LIMIT.toLocaleString()}</strong> caracteres usados este mes<br>`;
             
-            if (percentage >= 100) {
-                message += `<strong style="color: #dc3545;">⛔ LÍMITE ALCANZADO - Ya no es gratis este mes.</strong>`;
-                generateBtn.disabled = true;
+            if (used >= MONTHLY_LIMIT) {
+                const excess = used - MONTHLY_LIMIT;
+                const excessCost = (excess / 1000000) * COST_PER_MILLION;
+                message += `<strong style="color: #dc3545;">⚠️ HAS EXCEDIDO TU LÍMITE GRATIS</strong><br>`;
+                message += `Caracteres de pago: ${excess.toLocaleString()} (~$${excessCost.toFixed(4)} USD)<br>`;
+                message += `<em style="font-size: 0.9em;">Google te cobrará $${COST_PER_MILLION} USD por millón de caracteres adicionales</em>`;
             } else {
-                message += `Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres gratis (${(100 - percentage).toFixed(1)}%).`;
+                message += `Te quedan <strong>${remaining.toLocaleString()}</strong> caracteres GRATIS (${(100 - percentage).toFixed(1)}%)<br>`;
+                message += `<em style="font-size: 0.9em;">Se renueva automáticamente el 1 de cada mes</em>`;
             }
             
             usageText.innerHTML = message;
@@ -671,38 +858,124 @@
             usageAlert.classList.remove('show', 'warning', 'danger');
             
             if (percentage >= 1.0) {
+                const excess = used - MONTHLY_LIMIT;
+                const cost = (excess / 1000000) * COST_PER_MILLION;
                 usageAlert.className = 'alert danger show';
                 usageAlert.innerHTML = `
-                    <strong>🚨 LÍMITE EXCEDIDO</strong><br>
-                    Has usado ${used.toLocaleString()} caracteres este mes. A partir de ahora Google comenzará a cobrar por cada carácter adicional.<br>
-                    <strong>Tu cuota se renovará automáticamente el 1 de ${getNextMonthName()}.</strong>
+                    <strong>🚨 ESTÁS EN MODO DE PAGO</strong><br>
+                    Has excedido tu cuota gratuita de ${MONTHLY_LIMIT.toLocaleString()} caracteres.<br>
+                    Google está cobrando $${COST_PER_MILLION} USD por millón de caracteres adicionales.<br>
+                    Excedente actual: ${excess.toLocaleString()} caracteres ≈ $${cost.toFixed(4)} USD
                 `;
             } else if (percentage >= CRITICAL_THRESHOLD) {
                 usageAlert.className = 'alert danger show';
                 usageAlert.innerHTML = `
-                    <strong>⚠️ ALERTA CRÍTICA</strong><br>
-                    Has usado el ${(percentage * 100).toFixed(1)}% de tu cuota gratuita. Solo te quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres gratis este mes.
+                    <strong>⚠️ ALERTA CRÍTICA - ${(percentage * 100).toFixed(1)}% usado</strong><br>
+                    Solo te quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres GRATIS este mes.<br>
+                    Verifica tu uso real en Google Cloud antes de continuar.
                 `;
             } else if (percentage >= DANGER_THRESHOLD) {
                 usageAlert.className = 'alert warning show';
                 usageAlert.innerHTML = `
-                    <strong>⚠️ ATENCIÓN</strong><br>
-                    Has usado el ${(percentage * 100).toFixed(1)}% de tu cuota gratuita. Te quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres este mes.
+                    <strong>⚠️ ATENCIÓN - ${(percentage * 100).toFixed(1)}% usado</strong><br>
+                    Te estás acercando al límite gratuito. Quedan ${(MONTHLY_LIMIT - used).toLocaleString()} caracteres.
                 `;
             } else if (percentage >= WARNING_THRESHOLD) {
                 usageAlert.className = 'alert warning show';
                 usageAlert.innerHTML = `
-                    <strong>💡 Aviso</strong><br>
-                    Has usado el ${(percentage * 100).toFixed(1)}% de tu cuota gratuita.
+                    <strong>💡 Aviso - ${(percentage * 100).toFixed(1)}% de tu cuota mensual usado</strong>
                 `;
             }
         }
         
-        function getNextMonthName() {
-            const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
-                          'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-            const nextMonth = (new Date().getMonth() + 1) % 12;
-            return months[nextMonth];
+        // MODAL DE AJUSTE
+        function showAdjustModal() {
+            adjustInput.value = getMonthlyUsage();
+            adjustModal.classList.add('show');
+        }
+        
+        function closeAdjustModal() {
+            adjustModal.classList.remove('show');
+        }
+        
+        function saveAdjustment() {
+            const newValue = parseInt(adjustInput.value);
+            if (newValue >= 0 && newValue <= 10000000) {
+                const now = new Date();
+                const currentMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
+                localStorage.setItem('tts-usage-google-neural2', JSON.stringify({
+                    month: currentMonth,
+                    chars: newValue,
+                    lastUpdated: now.toISOString()
+                }));
+                updateUsageDisplay();
+                checkUsageAlerts();
+                closeAdjustModal();
+                alert(`✅ Contador actualizado a ${newValue.toLocaleString()} caracteres`);
+            } else {
+                alert('❌ Por favor ingresa un número válido entre 0 y 10,000,000');
+            }
+        }
+        
+        function openGoogleCloudMetrics() {
+            window.open('https://console.cloud.google.com/apis/api/texttospeech.googleapis.com/metrics', '_blank');
+        }
+        
+        // CALCULADORA DE COSTO
+        function calculateCost() {
+            const textLength = textInput.value.length;
+            if (textLength === 0) {
+                costCalculator.classList.remove('show');
+                return;
+            }
+            
+            const currentUsage = getMonthlyUsage();
+            const remaining = Math.max(0, MONTHLY_LIMIT - currentUsage);
+            
+            let html = '';
+            
+            if (textLength <= remaining) {
+                html = `
+                    <div class="cost-row">
+                        <span>Texto:</span>
+                        <span>${textLength.toLocaleString()} caracteres</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Dentro del límite gratis:</span>
+                        <span class="cost-free">✅ SÍ (quedan ${remaining.toLocaleString()})</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>COSTO:</span>
+                        <span class="cost-free">$0.00 USD (GRATIS)</span>
+                    </div>
+                `;
+            } else {
+                const freeChars = remaining;
+                const paidChars = textLength - remaining;
+                const paidCost = (paidChars / 1000000) * COST_PER_MILLION;
+                
+                html = `
+                    <div class="cost-row">
+                        <span>Texto total:</span>
+                        <span>${textLength.toLocaleString()} caracteres</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Parte GRATIS:</span>
+                        <span class="cost-free">${freeChars.toLocaleString()} caracteres</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Parte DE PAGO:</span>
+                        <span class="cost-paid">${paidChars.toLocaleString()} caracteres</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>COSTO TOTAL:</span>
+                        <span class="cost-paid">$${paidCost.toFixed(4)} USD</span>
+                    </div>
+                `;
+            }
+            
+            costBreakdown.innerHTML = html;
+            costCalculator.classList.add('show');
         }
         
         // INTERFAZ
@@ -719,6 +992,7 @@
             reader.onload = (e) => {
                 textInput.value = e.target.result;
                 updateCharCount();
+                calculateCost();
             };
             reader.readAsText(file);
         }
@@ -732,6 +1006,7 @@
             textInput.value = '';
             fileInput.value = '';
             updateCharCount();
+            calculateCost();
             audioPlayer.classList.remove('show');
             multiPartContainer.classList.remove('show');
             status.classList.remove('show');
@@ -843,7 +1118,7 @@
                     <div class="part-status pending" id="status-${partIndex}">⏳ Pendiente</div>
                 </div>
                 <div class="part-info">
-                    📝 ${charCount.toLocaleString()} caracteres • ~${Math.ceil(charCount / 150)} palabras
+                    📝 ${charCount.toLocaleString()} caracteres
                 </div>
                 <div class="part-preview">"${preview}"</div>
                 <div class="part-audio" id="audio-${partIndex}" style="display: none;"></div>
@@ -972,30 +1247,31 @@
             
             const charCount = text.length;
             const currentUsage = getMonthlyUsage();
-            const remaining = MONTHLY_LIMIT - currentUsage;
+            const remaining = Math.max(0, MONTHLY_LIMIT - currentUsage);
             
-            // Verificar límite
+            // Confirmar si excede límite
             if (charCount > remaining) {
-                const willExceed = charCount - remaining;
+                const freeChars = remaining;
+                const paidChars = charCount - remaining;
+                const paidCost = (paidChars / 1000000) * COST_PER_MILLION;
+                
                 if (!confirm(
-                    `⚠️ ADVERTENCIA DE COSTO\n\n` +
-                    `Tu texto tiene ${charCount.toLocaleString()} caracteres.\n` +
-                    `Solo te quedan ${remaining.toLocaleString()} caracteres gratis.\n\n` +
-                    `Si continúas, excederás tu cuota gratuita por ${willExceed.toLocaleString()} caracteres.\n` +
-                    `Google comenzará a cobrar por el excedente.\n\n` +
-                    `¿Deseas continuar de todas formas?`
+                    `⚠️ ADVERTENCIA: ESTO TENDRÁ COSTO\n\n` +
+                    `Tu texto: ${charCount.toLocaleString()} caracteres\n` +
+                    `Parte gratis: ${freeChars.toLocaleString()} caracteres\n` +
+                    `Parte DE PAGO: ${paidChars.toLocaleString()} caracteres\n\n` +
+                    `💰 COSTO: $${paidCost.toFixed(4)} USD\n\n` +
+                    `Google te cobrará este monto a fin de mes.\n\n` +
+                    `¿Deseas continuar?`
                 )) {
                     showStatus('Generación cancelada.', 'error');
                     return;
                 }
-            }
-            
-            // Advertencia si se acerca al límite
-            if (currentUsage + charCount > MONTHLY_LIMIT * WARNING_THRESHOLD && currentUsage < MONTHLY_LIMIT) {
+            } else if (currentUsage > MONTHLY_LIMIT * WARNING_THRESHOLD) {
                 const percentageAfter = ((currentUsage + charCount) / MONTHLY_LIMIT) * 100;
                 if (!confirm(
-                    `⚠️ AVISO\n\n` +
-                    `Después de generar este audio habrás usado el ${percentageAfter.toFixed(1)}% de tu cuota mensual gratuita.\n\n` +
+                    `💡 AVISO\n\n` +
+                    `Después de generar habrás usado el ${percentageAfter.toFixed(1)}% de tu cuota gratuita.\n\n` +
                     `¿Continuar?`
                 )) {
                     showStatus('Generación cancelada.', 'error');
@@ -1021,11 +1297,10 @@
             partsContainer.innerHTML = '';
             generatedParts = [];
             
-            const estimatedTime = Math.ceil(totalParts * 1);
             splitInfo.innerHTML = `
                 <h4>📊 Dividido en ${totalParts} partes</h4>
                 <p>Total: ${text.length.toLocaleString()} caracteres</p>
-                <p>⏱️ Tiempo estimado: ${estimatedTime}-${estimatedTime + 2} minutos</p>
+                <p>⏱️ Tiempo estimado: ${totalParts}-${totalParts + 2} minutos</p>
             `;
             
             parts.forEach((partText, index) => {
@@ -1126,7 +1401,15 @@
                 progressFill.style.width = '100%';
                 
                 saveMonthlyUsage(charCount);
-                showStatus('✅ ¡Generado!', 'success');
+                
+                const currentUsage = getMonthlyUsage();
+                if (currentUsage > MONTHLY_LIMIT) {
+                    const excess = currentUsage - MONTHLY_LIMIT;
+                    const cost = (excess / 1000000) * COST_PER_MILLION;
+                    showStatus(`✅ Generado! (Costo: $${cost.toFixed(4)} USD)`, 'success');
+                } else {
+                    showStatus('✅ ¡Generado! (Gratis)', 'success');
+                }
                 
             } catch (error) {
                 console.error('Error:', error);
