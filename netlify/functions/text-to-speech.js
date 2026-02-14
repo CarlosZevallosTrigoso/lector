@@ -1,13 +1,9 @@
-// ============================================
-// FUNCIÓN DE NETLIFY - AZURE TEXT-TO-SPEECH
-// ============================================
-
-const sdk = require('microsoft-cognitiveservices-speech-sdk');
+// Función de Netlify para Google Cloud Text-to-Speech API
+// Versión optimizada para voces Neural2
 
 exports.handler = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false;
     
-    // Validar método HTTP
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405,
@@ -15,12 +11,11 @@ exports.handler = async (event, context) => {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({ error: 'Método no permitido. Usa POST.' })
+            body: JSON.stringify({ error: 'Método no permitido' })
         };
     }
     
     try {
-        // Parsear datos
         const { text, voiceName } = JSON.parse(event.body);
         
         // Validaciones
@@ -31,11 +26,11 @@ exports.handler = async (event, context) => {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                body: JSON.stringify({ error: 'El texto no puede estar vacío' })
+                body: JSON.stringify({ error: 'Texto vacío' })
             };
         }
         
-        if (text.length > 2000) {
+        if (text.length > 2500) {
             return {
                 statusCode: 400,
                 headers: {
@@ -43,108 +38,151 @@ exports.handler = async (event, context) => {
                     'Access-Control-Allow-Origin': '*'
                 },
                 body: JSON.stringify({ 
-                    error: `Máximo 2000 caracteres por fragmento. Recibido: ${text.length}`,
-                    charCount: text.length
+                    error: `Máximo 2500 caracteres. Recibido: ${text.length}` 
                 })
             };
         }
         
-        // Obtener credenciales de Azure
-        const speechKey = process.env.AZURE_SPEECH_KEY;
-        const speechRegion = process.env.AZURE_REGION;
+        // Obtener API key
+        const apiKey = process.env.GOOGLE_TTS_API_KEY;
         
-        if (!speechKey || !speechRegion) {
-            console.error('Credenciales de Azure no configuradas');
+        if (!apiKey) {
+            console.error('API key no configurada');
             return {
                 statusCode: 500,
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
+                body: JSON.stringify({ error: 'Configuración incompleta' })
+            };
+        }
+        
+        // Preparar request a Google
+        const languageCode = voiceName.substring(0, 5);
+        
+        const requestBody = {
+            input: { text: text },
+            voice: {
+                languageCode: languageCode,
+                name: voiceName
+            },
+            audioConfig: {
+                audioEncoding: 'MP3',
+                speakingRate: 1.0,
+                pitch: 0.0,
+                volumeGainDb: 0.0,
+                sampleRateHertz: 24000
+            }
+        };
+        
+        // Timeout controller
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 9000);
+        
+        let response;
+        
+        try {
+            response = await fetch(
+                `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
+                }
+            );
+            
+            clearTimeout(timeout);
+            
+        } catch (fetchError) {
+            clearTimeout(timeout);
+            
+            if (fetchError.name === 'AbortError') {
+                return {
+                    statusCode: 504,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify({ 
+                        error: 'Timeout procesando audio'
+                    })
+                };
+            }
+            
+            return {
+                statusCode: 502,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
                 body: JSON.stringify({ 
-                    error: 'Configuración del servidor incompleta',
-                    hint: 'Variables AZURE_SPEECH_KEY o AZURE_REGION no encontradas'
+                    error: 'Error de conexión con Google'
                 })
             };
         }
         
-        // Configurar Azure Speech SDK
-        const speechConfig = sdk.SpeechConfig.fromSubscription(speechKey, speechRegion);
-        speechConfig.speechSynthesisVoiceName = voiceName;
-        speechConfig.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3;
-        
-        // Crear sintetizador
-        const synthesizer = new sdk.SpeechSynthesizer(speechConfig, null);
-        
-        // Generar audio
-        return new Promise((resolve, reject) => {
-            synthesizer.speakTextAsync(
-                text,
-                result => {
-                    synthesizer.close();
-                    
-                    if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
-                        // Convertir audio a base64
-                        const audioData = result.audioData;
-                        const base64Audio = Buffer.from(audioData).toString('base64');
-                        
-                        resolve({
-                            statusCode: 200,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Access-Control-Allow-Origin': '*',
-                                'Cache-Control': 'no-cache'
-                            },
-                            body: JSON.stringify({
-                                audioContent: base64Audio,
-                                characterCount: text.length,
-                                voiceUsed: voiceName,
-                                success: true
-                            })
-                        });
-                    } else {
-                        console.error('Error de síntesis:', result.errorDetails);
-                        resolve({
-                            statusCode: 500,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Access-Control-Allow-Origin': '*'
-                            },
-                            body: JSON.stringify({
-                                error: 'Error al sintetizar audio',
-                                details: result.errorDetails
-                            })
-                        });
-                    }
-                },
-                error => {
-                    synthesizer.close();
-                    console.error('Error:', error);
-                    resolve({
-                        statusCode: 500,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
-                        },
-                        body: JSON.stringify({
-                            error: 'Error al generar audio',
-                            message: error.toString()
-                        })
-                    });
+        if (!response.ok) {
+            let errorMessage = 'Error al generar audio';
+            
+            try {
+                const errorData = await response.json();
+                if (errorData.error && errorData.error.message) {
+                    errorMessage = errorData.error.message;
                 }
-            );
-        });
+            } catch (e) {
+                // Ignorar errores de parsing
+            }
+            
+            return {
+                statusCode: response.status,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({ error: errorMessage })
+            };
+        }
+        
+        const data = await response.json();
+        
+        if (!data.audioContent) {
+            return {
+                statusCode: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({ error: 'No se recibió audio' })
+            };
+        }
+        
+        return {
+            statusCode: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({
+                audioContent: data.audioContent,
+                characterCount: text.length,
+                voiceUsed: voiceName,
+                success: true
+            })
+        };
         
     } catch (error) {
-        console.error('Error inesperado:', error);
+        console.error('Error:', error);
         return {
             statusCode: 500,
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({
-                error: 'Error interno del servidor',
+            body: JSON.stringify({ 
+                error: 'Error interno',
                 message: error.message
             })
         };
